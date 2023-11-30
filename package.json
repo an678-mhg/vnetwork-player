@@ -1,6 +1,6 @@
 {
   "name": "vnetwork-player",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A hls custom player",
   "main": "dist/index.js",
   "files": [
