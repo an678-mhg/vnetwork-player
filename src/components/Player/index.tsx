@@ -223,8 +223,6 @@ const Player: React.FC<PlayerProps> = ({
       )
         return;
 
-      console.log(data?.levels)
-
       // @ts-ignore
       setSourceMulti(data?.levels?.map((item) => ({ label: `${item?.width}p`, url: item?.url?.[0] })));
       setCurrentSource(data?.levels?.length - 1);
