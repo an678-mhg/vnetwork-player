@@ -223,8 +223,10 @@ const Player: React.FC<PlayerProps> = ({
       )
         return;
 
+      console.log(data?.levels)
+
       // @ts-ignore
-      setSourceMulti(data?.levels?.map((item) => ({ label: item?.height, url: item?.url?.[0] })));
+      setSourceMulti(data?.levels?.map((item) => ({ label: `${item?.width}p`, url: item?.url?.[0] })));
       setCurrentSource(data?.levels?.length - 1);
       hls.startLevel = data?.levels?.length - 1;
     });
