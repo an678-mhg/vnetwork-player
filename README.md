@@ -16,7 +16,7 @@ import Player from "vnetwork-player";
 
 ## Basic Usage
 
-```
+```jsx
 
 import { useRef } from "react"
 import Player from "vnetwork-player"
