@@ -3,20 +3,17 @@ import React, {
   useState,
   useEffect
 } from "react";
-import { BsPauseFill, BsPlayFill } from "react-icons/bs";
-import { HiVolumeUp } from "react-icons/hi";
-import { AiFillSetting } from "react-icons/ai";
-import { CgMiniPlayer } from "react-icons/cg";
 import { BiFullscreen, BiExitFullscreen } from "react-icons/bi";
 import { formatVideoTime, playSpeedOptions } from "../../utils/contants";
-import { FaVolumeMute } from "react-icons/fa";
 import { CircularProgress } from "react-cssfx-loading";
+import { PlayerProps, Source } from "../../utils/types";
+import { IoMdPlay, IoMdPause, IoMdVolumeHigh, IoMdVolumeOff, IoMdSettings } from "react-icons/io";
+import { RiPictureInPictureFill } from "react-icons/ri"
 import MainSettings from "./Settings/MainSettings";
 import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
 import QualitySettings from "./Settings/QualitySettings";
 import SubtitleSettings from "./Settings/SubtitleSettings";
 import Hls from "hls.js";
-import { PlayerProps, Source } from "../../utils/types";
 
 import "../../styles.css";
 
@@ -35,6 +32,7 @@ const Player: React.FC<PlayerProps> = ({
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
   const timeoutSeekRef = useRef<any>(null);
   const hlsRef = useRef<Hls | null>(null)
+  const volumeRef = useRef<HTMLDivElement | null>(null)
 
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
@@ -238,8 +236,9 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    // @ts-ignore
-    const percent = (e?.clientX - e?.target?.getBoundingClientRect()?.left) / e?.target?.getBoundingClientRect()?.width;
+    const left = volumeRef.current?.getBoundingClientRect()?.left as number
+    const width = volumeRef?.current?.getBoundingClientRect()?.width as number
+    const percent = (e?.clientX - left) / width;
     setVolume(percent * 100)
   };
 
@@ -502,26 +501,34 @@ const Player: React.FC<PlayerProps> = ({
             className="main-control-container"
           >
             <div className="main-settings-content">
-              <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content">
-                {play ? <BsPauseFill size={30} /> : <BsPlayFill size={30} />}
+              <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content tooltip-container">
+                {play ? <IoMdPause size={23} /> : <IoMdPlay size={23} />}
+                <div className="tooltip opacity-animation">Play</div>
               </div>
 
-              <div className="main-settings-content">
+              <div className="main-settings-content volume-container">
                 <div
                   onClick={handleToggleMuted}
-                  className="cursor-pointer mr-3 main-settings-content"
+                  className="cursor-pointer mr-3 main-settings-content tooltip-container"
                 >
                   {muted ? (
-                    <FaVolumeMute size={25} />
+                    <IoMdVolumeOff size={25} />
                   ) : (
-                    <HiVolumeUp size={25} />
+                    <IoMdVolumeHigh size={25} />
                   )}
+
+                  <div className="tooltip">Volume</div>
                 </div>
-                <div onClick={handleVolumeChange} className="progress volume mr-3">
+                <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation">
                   <div className="progress-gray">
                     <div
                       style={{ width: `${volume}%`, backgroundColor: defaultColor }}
                       className="progress-main"
+                    />
+
+                    <div className="progress-dot" style={{
+                      backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
+                    }}
                     />
                   </div>
                 </div>
@@ -537,25 +544,33 @@ const Player: React.FC<PlayerProps> = ({
               )}
             </div>
             <div className="main-settings-content">
-              <AiFillSetting
-                onClick={() => setShowSettings(!showSettings)}
-                className="cursor-pointer mr-3"
-                size={25}
-              />
-              <CgMiniPlayer
-                onClick={handleVideoPicture}
-                className="cursor-pointer mr-3"
-                size={25}
-              />
+              <div className="tooltip-container main-settings-content">
+                <IoMdSettings
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="cursor-pointer mr-3"
+                  size={23}
+                />
+                <div className="tooltip">Settings</div>
+              </div>
+              <div className="tooltip-container main-settings-content">
+                <RiPictureInPictureFill
+                  onClick={handleVideoPicture}
+                  className="cursor-pointer mr-3"
+                  size={23}
+                />
+                <div className="tooltip">PIP</div>
+              </div>
               <div
                 onClick={handleFullScreen}
-                className="cursor-pointer main-settings-content"
+                className="cursor-pointer main-settings-content tooltip-container"
               >
                 {fullScreen ? (
-                  <BiExitFullscreen size={25} />
+                  <BiExitFullscreen size={23} />
                 ) : (
-                  <BiFullscreen size={25} />
+                  <BiFullscreen size={23} />
                 )}
+
+                <div className="tooltip">Fullscreen</div>
               </div>
             </div>
           </div>

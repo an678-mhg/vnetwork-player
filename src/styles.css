@@ -82,7 +82,7 @@
 }
 
 .opacity-animation {
-  animation: fadeIn ease-in-out 0.3s;
+  animation: fadeIn ease-in-out 0.6s;
 }
 
 .main-control-container {
@@ -90,7 +90,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
+  padding: 0 6px;
 }
 
 .main-settings-content {
@@ -105,7 +105,7 @@
 
 .volume {
   /* md:block hidden w-[100px] h-[4px] */
-  width: 80px;
+  width: 120px;
   height: 4px;
   display: none;
 }
@@ -150,7 +150,8 @@
 
 .icon-20px {
   width: 20px;
-  height: 20p;
+  height: 20px;
+  display: flex;
 }
 
 .overflow-y-auto {
@@ -165,12 +166,22 @@
   margin-right: 12px;
 }
 
-.preview-time {
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip {
   position: absolute;
   padding: 5px 8px;
   border-radius: 4px;
   background-color: #111;
-  top: 0;
+  top: -35px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  display: none;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 @media only screen and (min-width: 768px) {
@@ -184,6 +195,14 @@
   }
 
   .volume {
+    display: none;
+  }
+
+  .volume-container:hover .volume {
+    display: block;
+  }
+
+  .tooltip-container:hover .tooltip {
     display: block;
   }
 }
