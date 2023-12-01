@@ -16,6 +16,6 @@ export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
     poster?: string;
     color?: string;
     subtitle?: Subtitle[] | undefined;
-    ref?: React.MutableRefObject<HTMLVideoElement>;
+    playerRef: React.MutableRefObject<HTMLVideoElement | null>;
     live?: boolean;
 }

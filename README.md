@@ -18,22 +18,18 @@ import Player from "vnetwork-player";
 
 ```jsx
 
+import VPlayer from "vnetwork-player"
 import { useRef } from "react"
-import Player from "vnetwork-player"
+
+import './App.css'
 
 const App = () => {
-  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const ref = useRef<HTMLVideoElement | null>(null)
 
   return (
-    <Player
-      source="https://example.com/manifest.m3u8"
-      className="video"
-      poster=""
-      color="#FF0000"
-      playerRef={videoRef}
-      subtitle={[
-        { lang: "Eng", url: "https://cdn.jsdelivr.net/gh/naptestdev/video-examples@master/fr.vtt" }
-      ]}
+    <VPlayer
+      playerRef={ref}
+      src="https://kd.opstream3.com/20221216/28490_6127c8ea/index.m3u8"
     />
   )
 }
@@ -44,14 +40,14 @@ export default App
 
 ## Props
 
-| property                    | type                 |
+| property                    | type                                     |
 | --------------------------- | -------------------- |
-| source                      | string (m3u8, mp4)   |
+| src                         | string (m3u8, mp4)   |
 | className?                  | string               |
 | poster?                     | string               |
-| color?                      | string               |
-| playerRef                   | React.MutableRefObject<HTMLVideoElement>       |
-| subtitle                    | { lang: string; url: string }[]           |
+| color?                      | string                                    |
+| playerRef                         | React.MutableRefObject<HTMLVideoElement>       |
+| subtitle?                | { lang: string; url: string }[]           |
 | ...props                    | HTMLProps<HTMLVideoElement>      |
 
 

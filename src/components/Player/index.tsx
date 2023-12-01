@@ -23,7 +23,7 @@ import "../../styles.css";
 const Player: React.FC<PlayerProps> = ({
   color,
   subtitle,
-  ref,
+  playerRef,
   className,
   poster,
   src,
@@ -33,8 +33,7 @@ const Player: React.FC<PlayerProps> = ({
   const seekRef = useRef<HTMLDivElement | null>(null);
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
   const timeoutSeekRef = useRef<any>(null);
-  const hlsRef = useRef<Hls | null>(null);
-  const myRef = useRef<HTMLVideoElement | null>(null)
+  const hlsRef = useRef<Hls | null>(null)
 
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
@@ -50,12 +49,10 @@ const Player: React.FC<PlayerProps> = ({
     "main" | "playspeed" | "quality" | "subtitle"
   >("main");
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
-  const [volume, setVolume] = useState(50);
+  const [volume, setVolume] = useState(100);
   const [seeking, setSeeking] = useState(false);
-  // const [previewTime, setPreviewTime] = useState<number | null>(null)
 
   const defaultColor = color || "#ef4444"
-  const playerRef = ref || myRef
   const source = src
 
   const handlePlayPause = () => {
@@ -110,23 +107,25 @@ const Player: React.FC<PlayerProps> = ({
       clearTimeout(timeoutSeekRef?.current);
     }
 
-    if (clientX <= left) {
-      if (playerRef !== null && playerRef?.current !== null) {
-        playerRef.current.currentTime = 0;
-      }
-      setSeeking(false);
-      return;
-    }
-
-    if (clientX >= width + left) {
-      if (playerRef !== null && playerRef?.current !== null) {
-        playerRef.current.currentTime = playerRef?.current?.duration;
-      }
-      setSeeking(false);
-      return;
-    }
-
     timeoutSeekRef.current = setTimeout(() => {
+      if (clientX <= left) {
+        if (playerRef !== null && playerRef?.current !== null) {
+          playerRef.current.currentTime = 0;
+        }
+
+        setSeeking(false)
+        return;
+      }
+
+      if (clientX >= width + left) {
+        if (playerRef !== null && playerRef?.current !== null) {
+          playerRef.current.currentTime = playerRef?.current?.duration;
+        }
+
+        setSeeking(false)
+        return;
+      }
+
       if (playerRef !== null && playerRef?.current !== null) {
         playerRef.current.currentTime = percent * playerRef.current?.duration;
       }
