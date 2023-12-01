@@ -28,6 +28,7 @@ const Player: React.FC<PlayerProps> = ({
   poster,
   src,
   live,
+  autoPlay,
   ...props
 }) => {
   const seekRef = useRef<HTMLDivElement | null>(null);
@@ -191,8 +192,11 @@ const Player: React.FC<PlayerProps> = ({
 
   const handleLoadVideoM3u8 = () => {
     if (!playerRef?.current) return;
-
     if (!Hls.isSupported()) throw Error("Not support hls");
+
+    if (hlsRef?.current) {
+      hlsRef?.current?.destroy()
+    }
 
     // @ts-ignore
     hlsRef?.current = new Hls();
@@ -207,7 +211,7 @@ const Player: React.FC<PlayerProps> = ({
         return;
 
       // @ts-ignore
-      setSourceMulti(data?.levels?.map((item) => ({ label: `${item?.width}p`, url: item?.url?.[0] })));
+      setSourceMulti(data?.levels?.map((item) => ({ label: `${item?.height}p`, url: item?.url?.[0] })));
       setCurrentSource(data?.levels?.length - 1);
       hls.startLevel = data?.levels?.length - 1;
     });
@@ -364,15 +368,23 @@ const Player: React.FC<PlayerProps> = ({
 
     if (type === "mp4") {
       playerRef?.current?.setAttribute("src", source);
-      setSourceMulti((prev) => [...prev, { label: "Default", url: source }]);
+      setSourceMulti([{ label: "Default", url: source }]);
     } else if (type === "m3u8") {
       handleLoadVideoM3u8();
     }
+  }, [source, sourceMulti?.length])
 
-    return () => {
-      hlsRef?.current && hlsRef?.current?.destroy();
-    };
-  }, [source, hlsRef?.current, sourceMulti?.length])
+  useEffect(() => {
+    if (!autoPlay) return
+
+    if (playerRef !== null && playerRef?.current !== null) {
+      playerRef.current.muted = true;
+      setMuted(true)
+      setVolume(0)
+      playerRef?.current?.play()
+    }
+
+  }, [autoPlay])
 
   return (
     <div
@@ -479,11 +491,11 @@ const Player: React.FC<PlayerProps> = ({
               />
             </div>
 
-            <div className="progress-dot" style={{
+            {!live && <div className="progress-dot" style={{
               backgroundColor: defaultColor, left: `calc(${(currentTime * 100) /
                 (playerRef?.current?.duration as number)
                 }% - 5px)`
-            }} />
+            }} />}
           </div>
           {/* Main control */}
           <div

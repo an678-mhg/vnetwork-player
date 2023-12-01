@@ -82,7 +82,7 @@
 }
 
 .opacity-animation {
-  animation: fadeIn ease-in-out 0.5s;
+  animation: fadeIn ease-in-out 0.3s;
 }
 
 .main-control-container {
