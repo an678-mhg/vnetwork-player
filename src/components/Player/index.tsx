@@ -28,6 +28,7 @@ const Player: React.FC<PlayerProps> = ({
   autoPlay,
   ...props
 }) => {
+  if (!src) throw new Error("Missing src props")
   const seekRef = useRef<HTMLDivElement | null>(null);
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
   const timeoutSeekRef = useRef<any>(null);
@@ -259,21 +260,21 @@ const Player: React.FC<PlayerProps> = ({
     }
   }, [volume]);
 
-  // useEffect(() => {
-  //   let timeout: any;
+  useEffect(() => {
+    let timeout: any;
 
-  //   if (!play || !showControl || showSettings || seeking) {
-  //     return;
-  //   }
+    if (!play || !showControl || showSettings || seeking) {
+      return;
+    }
 
-  //   timeout = setTimeout(() => {
-  //     setShowControl(false);
-  //   }, 6000);
+    timeout = setTimeout(() => {
+      setShowControl(false);
+    }, 4000);
 
-  //   return () => {
-  //     timeout && clearTimeout(timeout);
-  //   };
-  // }, [showControl, play, showSettings, seeking]);
+    return () => {
+      timeout && clearTimeout(timeout);
+    };
+  }, [showControl, play, showSettings, seeking]);
 
   // handle seek time in pc with mouse event
   useEffect(() => {
@@ -420,17 +421,19 @@ const Player: React.FC<PlayerProps> = ({
   return (
     <div
       ref={videoContainerRef}
-      // onMouseMove={() => {
-      //   setShowControl(true);
-      // }}
-      // onMouseLeave={() => {
-      //   if (seeking) {
-      //     return;
-      //   }
+      onMouseMove={() => {
+        setShowControl(true);
+      }}
+      onMouseLeave={() => {
+        if (seeking) {
+          return;
+        }
 
-      //   setShowControl(false);
-      // }}
-      onClick={() => setShowControl(true)}
+        setShowControl(false);
+      }}
+      onClick={() => {
+        setShowControl(true)
+      }}
       className="video-container"
     >
       <video
@@ -528,7 +531,7 @@ const Player: React.FC<PlayerProps> = ({
                 }% - 5px)`
             }} />}
 
-            {!live && previewTime?.time && previewTime?.left && <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div>}
+            {!live && (previewTime?.time && previewTime?.left) ? <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div> : ""}
           </div>
           {/* Main control */}
           <div

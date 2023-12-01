@@ -8,7 +8,7 @@
   height: 100%;
   position: relative;
   color: #fff;
-  background-color: #111;
+  background-color: #222;
 }
 
 .center-item-absolute {
@@ -43,9 +43,10 @@
 
 .settings-content {
   /* bg-[#111] p-1 w-full */
-  background-color: #111;
+  background-color: #222;
   padding: 4px;
   width: 100%;
+  border-radius: 4px;
 }
 
 .progress {
@@ -90,7 +91,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .main-settings-content {
@@ -174,7 +175,7 @@
   position: absolute;
   padding: 5px 8px;
   border-radius: 4px;
-  background-color: #111;
+  background-color: #222;
   top: -35px;
   font-size: 14px;
   font-weight: 600;
