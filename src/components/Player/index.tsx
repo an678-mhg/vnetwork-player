@@ -5,7 +5,6 @@ import React, {
 } from "react";
 import { BiFullscreen, BiExitFullscreen } from "react-icons/bi";
 import { formatVideoTime, playSpeedOptions } from "../../utils/contants";
-import { CircularProgress } from "react-cssfx-loading";
 import { PlayerProps, Source } from "../../utils/types";
 import { IoMdPlay, IoMdPause, IoMdVolumeHigh, IoMdVolumeOff, IoMdSettings } from "react-icons/io";
 import { RiPictureInPictureFill } from "react-icons/ri"
@@ -16,6 +15,7 @@ import SubtitleSettings from "./Settings/SubtitleSettings";
 import Hls from "hls.js";
 
 import "../../styles.css";
+import CircularProgress from "../CircularProgress";
 
 const Player: React.FC<PlayerProps> = ({
   color,
@@ -451,7 +451,7 @@ const Player: React.FC<PlayerProps> = ({
 
       {loading && (
         <div className="center-item-absolute">
-          <CircularProgress color="#fff" />
+          <CircularProgress />
         </div>
       )}
 
