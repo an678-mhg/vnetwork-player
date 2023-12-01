@@ -383,7 +383,6 @@ const Player: React.FC<PlayerProps> = ({
       setVolume(0)
       playerRef?.current?.play()
     }
-
   }, [autoPlay])
 
   return (

@@ -1,5 +1,9 @@
 # VNETWORK - Player
 
+## Demo Player 
+
+[https://stackblitz.com/edit/vitejs-vite-prsdgv?file=src%2FApp.tsx](https://stackblitz.com/edit/vitejs-vite-prsdgv?file=src%2FApp.tsx)
+
 ## Installation
 
 ```bash
