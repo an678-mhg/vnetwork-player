@@ -17,7 +17,7 @@ const PlaySpeedSettings: React.FC<PlaySpeedSettingsProps> = ({
   handleChangePlaySpeed,
 }) => {
   return (
-    <div>
+    <div className="opacity-animation">
       <div
         onClick={() => setSettingsType("main")}
         className="main-settings-content  p-2 cursor-pointer"

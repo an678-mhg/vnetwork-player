@@ -1,7 +1,7 @@
 import React from "react";
 import { AiOutlineLeft } from "react-icons/ai";
 import { BsCheckLg } from "react-icons/bs";
-import { Subtitle } from "..";
+import { Subtitle } from "../../../utils/types";
 
 interface SubtitleSettingsProps {
   setSettingsType: React.Dispatch<
@@ -21,7 +21,7 @@ const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
   handleTurnOffSubtitle,
 }) => {
   return (
-    <div className="overflow-y-auto">
+    <div className="overflow-y-auto opacity-animation">
       <div
         onClick={() => setSettingsType("main")}
         className="main-settings-content  p-2 cursor-pointer"

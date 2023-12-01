@@ -23,7 +23,7 @@ const MainSettings: React.FC<MainSettingsProps> = ({
   haveSubtitle,
 }) => {
   return (
-    <div>
+    <div className="opacity-animation">
       <div
         onClick={() => setSettingsType("playspeed")}
         className="main-settings cursor-pointer "

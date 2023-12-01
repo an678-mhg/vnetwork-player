@@ -1,11 +1,7 @@
 import React, {
   useRef,
   useState,
-  useEffect,
-  ChangeEvent,
-  HTMLProps,
-  // HTMLProps,
-  // ReactElement,
+  useEffect
 } from "react";
 import { BsPauseFill, BsPlayFill } from "react-icons/bs";
 import { HiVolumeUp } from "react-icons/hi";
@@ -20,35 +16,17 @@ import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
 import QualitySettings from "./Settings/QualitySettings";
 import SubtitleSettings from "./Settings/SubtitleSettings";
 import Hls from "hls.js";
+import { PlayerProps, Source } from "../../utils/types";
+
 import "../../styles.css";
-
-export interface Subtitle {
-  url: string;
-  lang: string;
-}
-
-export interface Source {
-  url: string;
-  label: string;
-}
-
-interface PlayerProps extends HTMLProps<HTMLVideoElement> {
-  source: string;
-  className?: string;
-  poster?: string;
-  color?: string;
-  subtitle?: Subtitle[] | undefined;
-  playerRef: React.MutableRefObject<HTMLVideoElement>;
-  live?: boolean;
-}
 
 const Player: React.FC<PlayerProps> = ({
   color,
   subtitle,
-  playerRef,
+  ref,
   className,
   poster,
-  source,
+  src,
   live,
   ...props
 }) => {
@@ -56,11 +34,12 @@ const Player: React.FC<PlayerProps> = ({
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
   const timeoutSeekRef = useRef<any>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const myRef = useRef<HTMLVideoElement | null>(null)
 
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
   const [currentPlaySpeed, setCurrePlaySpeed] = useState(3);
-  const [showControl, setShowControl] = useState(false);
+  const [showControl, setShowControl] = useState(true);
   const [play, setPlay] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [fullScreen, setFullScreen] = useState(false);
@@ -71,8 +50,13 @@ const Player: React.FC<PlayerProps> = ({
     "main" | "playspeed" | "quality" | "subtitle"
   >("main");
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
-  const [volume, setVolume] = useState(100);
+  const [volume, setVolume] = useState(50);
   const [seeking, setSeeking] = useState(false);
+  // const [previewTime, setPreviewTime] = useState<number | null>(null)
+
+  const defaultColor = color || "#ef4444"
+  const playerRef = ref || myRef
+  const source = src
 
   const handlePlayPause = () => {
     const player = playerRef.current;
@@ -126,23 +110,23 @@ const Player: React.FC<PlayerProps> = ({
       clearTimeout(timeoutSeekRef?.current);
     }
 
+    if (clientX <= left) {
+      if (playerRef !== null && playerRef?.current !== null) {
+        playerRef.current.currentTime = 0;
+      }
+      setSeeking(false);
+      return;
+    }
+
+    if (clientX >= width + left) {
+      if (playerRef !== null && playerRef?.current !== null) {
+        playerRef.current.currentTime = playerRef?.current?.duration;
+      }
+      setSeeking(false);
+      return;
+    }
+
     timeoutSeekRef.current = setTimeout(() => {
-      if (clientX <= left) {
-        if (playerRef !== null && playerRef?.current !== null) {
-          playerRef.current.currentTime = 0;
-        }
-        setSeeking(false);
-        return;
-      }
-
-      if (clientX >= width + left) {
-        if (playerRef !== null && playerRef?.current !== null) {
-          playerRef.current.currentTime = playerRef?.current?.duration;
-        }
-        setSeeking(false);
-        return;
-      }
-
       if (playerRef !== null && playerRef?.current !== null) {
         playerRef.current.currentTime = percent * playerRef.current?.duration;
       }
@@ -250,8 +234,10 @@ const Player: React.FC<PlayerProps> = ({
     }
   };
 
-  const handleVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setVolume(Number(e.target.value));
+  const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    // @ts-ignore
+    const percent = (e?.clientX - e?.target?.getBoundingClientRect()?.left) / e?.target?.getBoundingClientRect()?.width;
+    setVolume(percent * 100)
   };
 
   const handleTurnOffSubtitle = () => {
@@ -270,21 +256,21 @@ const Player: React.FC<PlayerProps> = ({
     }
   }, [volume]);
 
-  useEffect(() => {
-    let timeout: any;
+  // useEffect(() => {
+  //   let timeout: any;
 
-    if (!play || !showControl || showSettings || seeking) {
-      return;
-    }
+  //   if (!play || !showControl || showSettings || seeking) {
+  //     return;
+  //   }
 
-    timeout = setTimeout(() => {
-      setShowControl(false);
-    }, 6000);
+  //   timeout = setTimeout(() => {
+  //     setShowControl(false);
+  //   }, 6000);
 
-    return () => {
-      timeout && clearTimeout(timeout);
-    };
-  }, [showControl, play, showSettings, seeking]);
+  //   return () => {
+  //     timeout && clearTimeout(timeout);
+  //   };
+  // }, [showControl, play, showSettings, seeking]);
 
   // handle seek time in pc with mouse event
   useEffect(() => {
@@ -387,28 +373,21 @@ const Player: React.FC<PlayerProps> = ({
     return () => {
       hlsRef?.current && hlsRef?.current?.destroy();
     };
-  }, [source, hlsRef?.current, sourceMulti?.length]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      // @ts-ignore
-      playerRef?.current?.muted = false;
-    }, 2000);
-  }, []);
+  }, [source, hlsRef?.current, sourceMulti?.length])
 
   return (
     <div
       ref={videoContainerRef}
-      onMouseMove={() => {
-        setShowControl(true);
-      }}
-      onMouseLeave={() => {
-        if (seeking) {
-          return;
-        }
+      // onMouseMove={() => {
+      //   setShowControl(true);
+      // }}
+      // onMouseLeave={() => {
+      //   if (seeking) {
+      //     return;
+      //   }
 
-        setShowControl(false);
-      }}
+      //   setShowControl(false);
+      // }}
       onClick={() => setShowControl(true)}
       className="video-container"
     >
@@ -495,11 +474,17 @@ const Player: React.FC<PlayerProps> = ({
                     : `${(currentTime * 100) /
                     (playerRef?.current?.duration as number)
                     }%`,
-                  backgroundColor: color,
+                  backgroundColor: defaultColor,
                 }}
                 className="progress-main"
               />
             </div>
+
+            <div className="progress-dot" style={{
+              backgroundColor: defaultColor, left: `calc(${(currentTime * 100) /
+                (playerRef?.current?.duration as number)
+                }% - 5px)`
+            }} />
           </div>
           {/* Main control */}
           <div
@@ -507,13 +492,14 @@ const Player: React.FC<PlayerProps> = ({
             className="main-control-container"
           >
             <div className="main-settings-content">
-              <div onClick={handlePlayPause} className="cursor-pointer mr-3">
+              <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content">
                 {play ? <BsPauseFill size={30} /> : <BsPlayFill size={30} />}
               </div>
+
               <div className="main-settings-content">
                 <div
                   onClick={handleToggleMuted}
-                  className="cursor-pointer mr-3"
+                  className="cursor-pointer mr-3 main-settings-content"
                 >
                   {muted ? (
                     <FaVolumeMute size={25} />
@@ -521,12 +507,14 @@ const Player: React.FC<PlayerProps> = ({
                     <HiVolumeUp size={25} />
                   )}
                 </div>
-                <input
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="volume mr-3"
-                  type="range"
-                />
+                <div onClick={handleVolumeChange} className="progress volume mr-3">
+                  <div className="progress-gray">
+                    <div
+                      style={{ width: `${volume}%`, backgroundColor: defaultColor }}
+                      className="progress-main"
+                    />
+                  </div>
+                </div>
               </div>
               {!live ? (
                 <div className="time">

@@ -56,6 +56,15 @@
   cursor: pointer;
 }
 
+.progress-dot {
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+}
+
 .progress-gray {
   /* w-full h-[3px] bg-gray-400 relative */
   width: 100%;
@@ -98,6 +107,7 @@
   /* md:block hidden w-[100px] h-[4px] */
   width: 80px;
   height: 4px;
+  display: none;
 }
 
 .time {
@@ -155,6 +165,14 @@
   margin-right: 12px;
 }
 
+.preview-time {
+  position: absolute;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background-color: #111;
+  top: 0;
+}
+
 @media only screen and (min-width: 768px) {
   .settings-container {
     position: absolute;
@@ -163,6 +181,10 @@
     top: auto;
     bottom: 40px;
     width: 300px;
+  }
+
+  .volume {
+    display: block;
   }
 }
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { AiOutlineLeft } from "react-icons/ai";
-import { Source } from "../index";
 import { BsCheckLg } from "react-icons/bs";
+import { Source } from "../../../utils/types";
 
 interface QualitySettingsProps {
   setSettingsType: React.Dispatch<
@@ -19,7 +19,7 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
   handleChangeSource,
 }) => {
   return (
-    <div className="overflow-y-auto">
+    <div className="overflow-y-auto opacity-animation">
       <div
         onClick={() => setSettingsType("main")}
         className="main-settings-content p-2 cursor-pointer"
