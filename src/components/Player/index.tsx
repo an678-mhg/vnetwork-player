@@ -50,6 +50,7 @@ const Player: React.FC<PlayerProps> = ({
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
   const [volume, setVolume] = useState(100);
   const [seeking, setSeeking] = useState(false);
+  const [previewTime, setPreviewTime] = useState<{ time: number | null; left: number | null }>({ time: null, left: null })
 
   const defaultColor = color || "#ef4444"
   const source = src
@@ -258,21 +259,21 @@ const Player: React.FC<PlayerProps> = ({
     }
   }, [volume]);
 
-  useEffect(() => {
-    let timeout: any;
+  // useEffect(() => {
+  //   let timeout: any;
 
-    if (!play || !showControl || showSettings || seeking) {
-      return;
-    }
+  //   if (!play || !showControl || showSettings || seeking) {
+  //     return;
+  //   }
 
-    timeout = setTimeout(() => {
-      setShowControl(false);
-    }, 6000);
+  //   timeout = setTimeout(() => {
+  //     setShowControl(false);
+  //   }, 6000);
 
-    return () => {
-      timeout && clearTimeout(timeout);
-    };
-  }, [showControl, play, showSettings, seeking]);
+  //   return () => {
+  //     timeout && clearTimeout(timeout);
+  //   };
+  // }, [showControl, play, showSettings, seeking]);
 
   // handle seek time in pc with mouse event
   useEffect(() => {
@@ -384,19 +385,51 @@ const Player: React.FC<PlayerProps> = ({
     }
   }, [autoPlay])
 
+  useEffect(() => {
+    const handlePreviewTime = (e: MouseEvent) => {
+      if (!playerRef?.current) return
+
+      const clientX = e?.clientX
+      const left = seekRef.current?.getBoundingClientRect().left as number;
+      const width = seekRef.current?.getBoundingClientRect().width as number;
+      const percent = (clientX - left) / width;
+
+      if (clientX <= left) {
+        return
+      }
+
+      if (clientX >= left + width) {
+        return
+      }
+
+      setPreviewTime(
+        {
+          time: percent * playerRef?.current.duration,
+          left: percent
+        }
+      )
+    }
+
+    seekRef?.current?.addEventListener("mousemove", handlePreviewTime)
+
+    return () => {
+      seekRef?.current?.removeEventListener("mousemove", handlePreviewTime)
+    }
+  }, [])
+
   return (
     <div
       ref={videoContainerRef}
-      onMouseMove={() => {
-        setShowControl(true);
-      }}
-      onMouseLeave={() => {
-        if (seeking) {
-          return;
-        }
+      // onMouseMove={() => {
+      //   setShowControl(true);
+      // }}
+      // onMouseLeave={() => {
+      //   if (seeking) {
+      //     return;
+      //   }
 
-        setShowControl(false);
-      }}
+      //   setShowControl(false);
+      // }}
       onClick={() => setShowControl(true)}
       className="video-container"
     >
@@ -474,7 +507,7 @@ const Player: React.FC<PlayerProps> = ({
         )}
         <div onClick={(e) => e.stopPropagation()} className="w-full">
           {/* Seek time */}
-          <div ref={seekRef} onClick={handleSeekTime} className="progress">
+          <div ref={seekRef} onClick={handleSeekTime} className="progress tooltip-container">
             <div className="progress-gray">
               <div
                 style={{
@@ -494,6 +527,8 @@ const Player: React.FC<PlayerProps> = ({
                 (playerRef?.current?.duration as number)
                 }% - 5px)`
             }} />}
+
+            {!live && previewTime?.time && previewTime?.left && <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div>}
           </div>
           {/* Main control */}
           <div

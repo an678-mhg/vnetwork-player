@@ -105,7 +105,7 @@
 
 .volume {
   /* md:block hidden w-[100px] h-[4px] */
-  width: 120px;
+  width: 100px;
   height: 4px;
   display: none;
 }
