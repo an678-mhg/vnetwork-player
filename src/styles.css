@@ -15,9 +15,8 @@
   position: absolute;
   z-index: 100;
   top: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   left: 50%;
-  transform: translateY(-50%);
 }
 
 .control-container {
@@ -84,6 +83,10 @@
 
 .opacity-animation {
   animation: fadeIn ease-in-out 0.6s;
+}
+
+.width-animation {
+  animation: width ease-in-out 0.4s;
 }
 
 .main-control-container {
@@ -201,6 +204,42 @@ circle {
   animation: dash 1.5s ease-in-out infinite;
 }
 
+.error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 8px;
+}
+
+.error-image {
+  width: 100px;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  text-align: center;
+  color: #e74c3c;
+}
+
+.live-button {
+  transition: all ease-in-out 0.4s;
+}
+
+.live-button:hover {
+  color: #e74c3c;
+}
+
+@keyframes width {
+  to {
+    width: 100px;
+  }
+
+  from {
+    width: 0px;
+  }
+}
+
 @keyframes rotate {
   100% {
     transform: rotate(360deg);
@@ -220,6 +259,16 @@ circle {
 
   100% {
     stroke-dashoffset: -125px;
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+
+  from {
+    opacity: 0;
   }
 }
 
@@ -245,14 +294,8 @@ circle {
   .tooltip-container:hover .tooltip {
     display: block;
   }
-}
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-
-  from {
-    opacity: 0;
+  .error-image {
+    width: 200px;
   }
 }
