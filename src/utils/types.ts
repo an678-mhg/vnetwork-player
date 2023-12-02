@@ -11,11 +11,12 @@ export interface Source {
 }
 
 export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
-    src: string;
+    source: string | Source[];
     className?: string;
     poster?: string;
     color?: string;
     subtitle?: Subtitle[] | undefined;
-    playerRef: React.MutableRefObject<HTMLVideoElement | null>;
-    live?: boolean;
+    playerRef?: React.MutableRefObject<HTMLVideoElement | null>;
+    live?: boolean
+    multiSoucre?: boolean
 }

@@ -32,7 +32,7 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
           <div
             onClick={() => handleChangeSource(index)}
             className="p-2 text-sm font-semibold main-settings-content cursor-pointer"
-            key={item?.label}
+            key={item?.url}
           >
             <div className="icon-20px mr-3">
               {currentSource === index && <BsCheckLg size={20} />}

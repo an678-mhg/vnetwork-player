@@ -13,27 +13,46 @@ import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
 import QualitySettings from "./Settings/QualitySettings";
 import SubtitleSettings from "./Settings/SubtitleSettings";
 import Hls from "hls.js";
+import CircularProgress from "../CircularProgress";
 
 import "../../styles.css";
-import CircularProgress from "../CircularProgress";
 
 const Player: React.FC<PlayerProps> = ({
   color,
   subtitle,
-  playerRef,
+  playerRef: passedRef,
   className,
   poster,
-  src,
+  source: src,
   live,
   autoPlay,
+  multiSoucre = false,
   ...props
 }) => {
-  if (!src) throw new Error("Missing src props")
+  const hlsRef = useRef<Hls | null>(null)
+
+  if (!src) {
+    if (hlsRef.current) hlsRef.current?.destroy()
+    throw new Error("Missing src props")
+  }
+
+  if (multiSoucre && !Array.isArray(src)) {
+    if (hlsRef.current) hlsRef.current?.destroy()
+    throw new Error("multiSource so source must be an array")
+  }
+
+  if (!multiSoucre && typeof src !== "string") {
+    if (hlsRef.current) hlsRef.current?.destroy()
+    throw new Error("!multiSource so source must be an string")
+  }
+
+  const source = src as string
+
   const seekRef = useRef<HTMLDivElement | null>(null);
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
-  const timeoutSeekRef = useRef<any>(null);
-  const hlsRef = useRef<Hls | null>(null)
+  const timeoutSeekRef = useRef<any>(null)
   const volumeRef = useRef<HTMLDivElement | null>(null)
+  const myRef = useRef<HTMLVideoElement | null>(null)
 
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
@@ -54,7 +73,7 @@ const Player: React.FC<PlayerProps> = ({
   const [previewTime, setPreviewTime] = useState<{ time: number | null; left: number | null }>({ time: null, left: null })
 
   const defaultColor = color || "#ef4444"
-  const source = src
+  const playerRef = passedRef || myRef
 
   const handlePlayPause = () => {
     const player = playerRef.current;
@@ -165,12 +184,9 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleChangeSource = (index: number) => {
-    if (!hlsRef?.current) return;
     if (!playerRef?.current) return;
 
     if (currentSource === index) return
-
-    const hls = hlsRef?.current;
 
     setCurrentSource(index);
 
@@ -180,15 +196,41 @@ const Player: React.FC<PlayerProps> = ({
       existTrack.remove();
     }
 
-    hls.startLevel = index;
-    hls.loadSource(sourceMulti?.[index]?.url);
-    hls.startLoad();
+    if (hlsRef?.current) {
+      const hls = hlsRef?.current;
+      hls.startLevel = index;
+      hls.loadSource(sourceMulti?.[index]?.url);
+      hls.startLoad()
+    } else {
+      playerRef?.current?.setAttribute("src", sourceMulti?.[index]?.url)
+    };
 
-    playerRef?.current?.play();
+    const tmpCurrentTime = currentTime;
+    setCurrentTime(tmpCurrentTime);
+
+    if (playerRef !== null && playerRef?.current !== null) {
+      playerRef.current.currentTime = tmpCurrentTime;
+      playerRef.current.play();
+    }
 
     setShowSettings(false)
     setSettingsType("main")
   };
+
+  const handleLoadVideoMp4 = () => {
+    if (hlsRef?.current) hlsRef?.current?.destroy()
+
+    setSourceMulti(typeof source === "string" ? [{ label: "Default", url: source }] : source);
+
+    if (typeof source === "string") {
+      playerRef?.current?.setAttribute("src", source)
+    } else {
+      // @ts-ignore
+      setCurrentSource(source?.length - 1)
+      // @ts-ignore
+      playerRef?.current?.setAttribute("src", source?.[source?.length - 1]?.url)
+    }
+  }
 
   const handleLoadVideoM3u8 = () => {
     if (!playerRef?.current) return;
@@ -204,6 +246,11 @@ const Player: React.FC<PlayerProps> = ({
     const hls = hlsRef?.current;
 
     hls.on(Hls.Events.MANIFEST_PARSED, function (_, data) {
+      if (multiSoucre) {
+        // @ts-ignore
+        return setSourceMulti(source as Source[])
+      }
+
       if (
         data?.levels?.length !== sourceMulti?.length &&
         sourceMulti?.length !== 0
@@ -212,15 +259,20 @@ const Player: React.FC<PlayerProps> = ({
 
       // @ts-ignore
       setSourceMulti(data?.levels?.map((item) => ({ label: `${item?.height}p`, url: item?.url?.[0] })));
-      setCurrentSource(data?.levels?.length - 1);
-      hls.startLevel = data?.levels?.length - 1;
+      setCurrentSource(data?.levels?.length - 1)
+      hls.startLevel = data?.levels?.length - 1
     });
 
     hls.attachMedia(playerRef?.current);
-    hls.loadSource(source);
-    hls.startLoad();
 
-    playerRef?.current?.play();
+    if (!multiSoucre) {
+      hls.loadSource(source);
+    } else {
+      // @ts-ignore
+      hls.loadSource(source?.[currentSource]?.url)
+    }
+
+    hls.startLoad()
   };
 
   const handleChangeSubtitle = (index: number) => {
@@ -243,6 +295,22 @@ const Player: React.FC<PlayerProps> = ({
     const percent = (e?.clientX - left) / width;
     setVolume(percent * 100)
   };
+
+  // const handleLive = () => {
+  //   if (loading) return
+
+  //   if (!playerRef?.current) return
+  //   if (!hlsRef?.current) return
+
+  //   if (playerRef?.current?.duration - currentTime <= 5) return
+
+  //   const hls = hlsRef?.current
+
+  //   hls.loadSource(sourceMulti?.[currentSource]?.url);
+  //   hls.startLoad()
+
+  //   playerRef.current.play();
+  // }
 
   const handleTurnOffSubtitle = () => {
     setCurrentSubtitle(null);
@@ -365,15 +433,30 @@ const Player: React.FC<PlayerProps> = ({
   }, [currentSubtitle, currentSource]);
 
   useEffect(() => {
-    const type = source?.split(".")[source?.split(".").length - 1];
+    const type = typeof source === "string" ? source?.split(".")[source?.split(".")?.length - 1]
+      :
+      // @ts-ignore
+      source?.[0]?.url?.split(".")[source?.[0]?.url?.split(".")?.length - 1];
 
     if (type === "mp4") {
-      playerRef?.current?.setAttribute("src", source);
-      setSourceMulti([{ label: "Default", url: source }]);
+      handleLoadVideoMp4()
     } else if (type === "m3u8") {
       handleLoadVideoM3u8();
     }
-  }, [source, sourceMulti?.length])
+
+    if (autoPlay) {
+      playerRef?.current?.addEventListener("loadedmetadata", () => {
+        // @ts-ignore
+        playerRef?.current.play()
+      })
+    }
+
+    return () => {
+      if (hlsRef?.current) {
+        hlsRef?.current?.destroy()
+      }
+    }
+  }, [source, sourceMulti?.length, multiSoucre, hlsRef?.current])
 
   useEffect(() => {
     if (!autoPlay) return
@@ -382,7 +465,6 @@ const Player: React.FC<PlayerProps> = ({
       playerRef.current.muted = true;
       setMuted(true)
       setVolume(0)
-      playerRef?.current?.play()
     }
   }, [autoPlay])
 
@@ -417,6 +499,26 @@ const Player: React.FC<PlayerProps> = ({
       seekRef?.current?.removeEventListener("mousemove", handlePreviewTime)
     }
   }, [])
+
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     console.log(e?.code)
+  //     switch (e?.code) {
+  //       case "Space":
+  //         handlePlayPause()
+  //         break
+
+  //       default:
+  //         break
+  //     }
+  //   }
+
+  //   document.addEventListener("keydown", handleKeyDown)
+
+  //   return () => {
+  //     document.removeEventListener("keydown", handleKeyDown)
+  //   }
+  // }, [])
 
   return (
     <div
@@ -460,6 +562,12 @@ const Player: React.FC<PlayerProps> = ({
         style={{ display: showControl ? "flex" : "none" }}
         className="control-container opacity-animation"
       >
+
+        {!loading && <div onClick={handlePlayPause} className="center-item-absolute cursor-pointer">
+          {play ? <IoMdPause size={40} /> : <IoMdPlay size={40} />}
+        </div>}
+
+
         {/* Menu select play speed, quanlity, subtitle */}
         {showSettings && (
           <div
@@ -544,42 +652,44 @@ const Player: React.FC<PlayerProps> = ({
                 <div className="tooltip opacity-animation">Play</div>
               </div>
 
-              <div className="main-settings-content volume-container">
-                <div
-                  onClick={handleToggleMuted}
-                  className="cursor-pointer mr-3 main-settings-content tooltip-container"
-                >
-                  {muted ? (
-                    <IoMdVolumeOff size={25} />
-                  ) : (
-                    <IoMdVolumeHigh size={25} />
-                  )}
+              <div className="main-settings-content">
+                <div className="main-settings-content volume-container">
+                  <div
+                    onClick={handleToggleMuted}
+                    className="cursor-pointer mr-3 main-settings-content tooltip-container"
+                  >
+                    {muted ? (
+                      <IoMdVolumeOff size={25} />
+                    ) : (
+                      <IoMdVolumeHigh size={25} />
+                    )}
 
-                  <div className="tooltip">Volume</div>
-                </div>
-                <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation">
-                  <div className="progress-gray">
-                    <div
-                      style={{ width: `${volume}%`, backgroundColor: defaultColor }}
-                      className="progress-main"
-                    />
+                    <div className="tooltip">Volume</div>
+                  </div>
+                  <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation width-animation">
+                    <div className="progress-gray">
+                      <div
+                        style={{ width: `${volume}%`, backgroundColor: defaultColor }}
+                        className="progress-main"
+                      />
 
-                    <div className="progress-dot" style={{
-                      backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
-                    }}
-                    />
+                      <div className="progress-dot" style={{
+                        backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
+                      }}
+                      />
+                    </div>
                   </div>
                 </div>
+                {!live ? (
+                  <div className="time">
+                    {formatVideoTime(currentTime)}
+                    {" / "}
+                    {formatVideoTime(playerRef?.current?.duration as number)}
+                  </div>
+                ) : (
+                  <div className="text-sm font-semibold cursor-pointer live-button">Live</div>
+                )}
               </div>
-              {!live ? (
-                <div className="time">
-                  {formatVideoTime(currentTime)}
-                  {" / "}
-                  {formatVideoTime(playerRef?.current?.duration as number)}
-                </div>
-              ) : (
-                <div className="text-sm font-semibold cursor-pointer">Live</div>
-              )}
             </div>
             <div className="main-settings-content">
               <div className="tooltip-container main-settings-content">
