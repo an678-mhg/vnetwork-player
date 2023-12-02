@@ -1,6 +1,7 @@
 import VPlayer from "vnetwork-player"
-import './App.css'
 import { useEffect, useRef } from "react"
+
+import './App.css'
 
 const App = () => {
   const ref = useRef(null)
