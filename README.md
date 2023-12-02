@@ -16,6 +16,7 @@ npm i vnetwork-player
 
 ```jsx
 import Player from "vnetwork-player";
+import "vnetwork-player/dist/vnetwork-player.min.css" // import css
 ```
 
 ## Examples

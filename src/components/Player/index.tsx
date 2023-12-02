@@ -15,8 +15,6 @@ import SubtitleSettings from "./Settings/SubtitleSettings";
 import Hls from "hls.js";
 import CircularProgress from "../CircularProgress";
 
-import "../../styles.css";
-
 const Player: React.FC<PlayerProps> = ({
   color,
   subtitle,
@@ -506,205 +504,207 @@ const Player: React.FC<PlayerProps> = ({
   }, [play])
 
   return (
-    <div
-      ref={videoContainerRef}
-      onMouseMove={() => {
-        setShowControl(true);
-      }}
-      onMouseLeave={() => {
-        if (seeking) {
-          return;
-        }
-
-        setShowControl(false);
-      }}
-      onClick={() => {
-        setShowControl(true)
-      }}
-      className="video-container"
-    >
-      <video
-        ref={playerRef}
-        className={`video ${className || ''}`}
-        poster={poster || ""}
-        onPlay={() => setPlay(true)}
-        onPause={() => setPlay(false)}
-        onTimeUpdate={handleTimeUpdate}
-        onCanPlay={() => setLoading(false)}
-        onWaiting={() => setLoading(true)}
-        onLoad={() => setLoading(true)}
-        onLoadedMetadata={() => setLoading(true)}
-        {...props}
-      />
-
-      {loading && (
-        <div className="center-item-absolute">
-          <CircularProgress />
-        </div>
-      )}
-
+    <div id="vnetwork-player">
       <div
-        onClick={() => setShowSettings(false)}
-        style={{ display: showControl ? "flex" : "none" }}
-        className="control-container opacity-animation"
+        ref={videoContainerRef}
+        onMouseMove={() => {
+          setShowControl(true);
+        }}
+        onMouseLeave={() => {
+          if (seeking) {
+            return;
+          }
+
+          setShowControl(false);
+        }}
+        onClick={() => {
+          setShowControl(true)
+        }}
+        className="video-container"
       >
+        <video
+          ref={playerRef}
+          className={`video ${className || ''}`}
+          poster={poster || ""}
+          onPlay={() => setPlay(true)}
+          onPause={() => setPlay(false)}
+          onTimeUpdate={handleTimeUpdate}
+          onCanPlay={() => setLoading(false)}
+          onWaiting={() => setLoading(true)}
+          onLoad={() => setLoading(true)}
+          onLoadedMetadata={() => setLoading(true)}
+          {...props}
+        />
 
-        {!loading && <div onClick={handlePlayPause} className="center-item-absolute cursor-pointer">
-          {play ? <IoMdPause size={40} /> : <IoMdPlay size={40} />}
-        </div>}
-
-
-        {/* Menu select play speed, quanlity, subtitle */}
-        {showSettings && (
-          <div
-            onClick={() => setShowSettings(false)}
-            className="settings-container"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="settings-content"
-            >
-              {settingsType === "main" ? (
-                <MainSettings
-                  currentQuality={sourceMulti?.[currentSource]?.label}
-                  currentSpeed={playSpeedOptions?.[currentPlaySpeed]?.label}
-                  setSettingsType={setSettingsType}
-                  currentSubtitle={
-                    typeof currentSubtitle === "number"
-                      ? subtitle?.[currentSubtitle]?.lang
-                      : "Off"
-                  }
-                  haveSubtitle={Boolean(subtitle)}
-                  haveQuality={source?.length > 0}
-                />
-              ) : settingsType === "playspeed" ? (
-                <PlaySpeedSettings
-                  handleChangePlaySpeed={handleChangePlaySpeed}
-                  currentPlaySpeed={currentPlaySpeed}
-                  setSettingsType={setSettingsType}
-                />
-              ) : settingsType === "quality" ? (
-                <QualitySettings
-                  handleChangeSource={handleChangeSource}
-                  currentSource={currentSource}
-                  setSettingsType={setSettingsType}
-                  source={sourceMulti}
-                />
-              ) : (
-                <SubtitleSettings
-                  currentSubtitle={currentSubtitle}
-                  setSettingsType={setSettingsType}
-                  handleChangeSubtitle={handleChangeSubtitle}
-                  subtitle={subtitle!}
-                  handleTurnOffSubtitle={handleTurnOffSubtitle}
-                />
-              )}
-            </div>
+        {loading && (
+          <div className="center-item-absolute">
+            <CircularProgress />
           </div>
         )}
-        <div onClick={(e) => e.stopPropagation()} className="w-full">
-          {/* Seek time */}
-          <div ref={seekRef} onClick={handleSeekTime} className="progress tooltip-container">
-            <div className="progress-gray">
+
+        <div
+          onClick={() => setShowSettings(false)}
+          style={{ display: showControl ? "flex" : "none" }}
+          className="control-container opacity-animation"
+        >
+
+          {!loading && <div onClick={handlePlayPause} className="center-item-absolute cursor-pointer">
+            {play ? <IoMdPause size={40} /> : <IoMdPlay size={40} />}
+          </div>}
+
+
+          {/* Menu select play speed, quanlity, subtitle */}
+          {showSettings && (
+            <div
+              onClick={() => setShowSettings(false)}
+              className="settings-container"
+            >
               <div
-                style={{
-                  width: live
-                    ? "100%"
-                    : `${(currentTime * 100) /
-                    (playerRef?.current?.duration as number)
-                    }%`,
-                  backgroundColor: defaultColor,
-                }}
-                className="progress-main"
-              />
+                onClick={(e) => e.stopPropagation()}
+                className="settings-content"
+              >
+                {settingsType === "main" ? (
+                  <MainSettings
+                    currentQuality={sourceMulti?.[currentSource]?.label}
+                    currentSpeed={playSpeedOptions?.[currentPlaySpeed]?.label}
+                    setSettingsType={setSettingsType}
+                    currentSubtitle={
+                      typeof currentSubtitle === "number"
+                        ? subtitle?.[currentSubtitle]?.lang
+                        : "Off"
+                    }
+                    haveSubtitle={Boolean(subtitle)}
+                    haveQuality={source?.length > 0}
+                  />
+                ) : settingsType === "playspeed" ? (
+                  <PlaySpeedSettings
+                    handleChangePlaySpeed={handleChangePlaySpeed}
+                    currentPlaySpeed={currentPlaySpeed}
+                    setSettingsType={setSettingsType}
+                  />
+                ) : settingsType === "quality" ? (
+                  <QualitySettings
+                    handleChangeSource={handleChangeSource}
+                    currentSource={currentSource}
+                    setSettingsType={setSettingsType}
+                    source={sourceMulti}
+                  />
+                ) : (
+                  <SubtitleSettings
+                    currentSubtitle={currentSubtitle}
+                    setSettingsType={setSettingsType}
+                    handleChangeSubtitle={handleChangeSubtitle}
+                    subtitle={subtitle!}
+                    handleTurnOffSubtitle={handleTurnOffSubtitle}
+                  />
+                )}
+              </div>
             </div>
-
-            {!live && <div className="progress-dot" style={{
-              backgroundColor: defaultColor, left: `calc(${(currentTime * 100) /
-                (playerRef?.current?.duration as number)
-                }% - 5px)`
-            }} />}
-
-            {!live && (previewTime?.time && previewTime?.left) ? <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div> : ""}
-          </div>
-          {/* Main control */}
-          <div
-            onMouseDown={(e) => e.stopPropagation()}
-            className="main-control-container"
-          >
-            <div className="main-settings-content">
-              <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content tooltip-container">
-                {play ? <IoMdPause size={23} /> : <IoMdPlay size={23} />}
-                <div className="tooltip opacity-animation">Play</div>
+          )}
+          <div onClick={(e) => e.stopPropagation()} className="w-full">
+            {/* Seek time */}
+            <div ref={seekRef} onClick={handleSeekTime} className="progress tooltip-container">
+              <div className="progress-gray">
+                <div
+                  style={{
+                    width: live
+                      ? "100%"
+                      : `${(currentTime * 100) /
+                      (playerRef?.current?.duration as number)
+                      }%`,
+                    backgroundColor: defaultColor,
+                  }}
+                  className="progress-main"
+                />
               </div>
 
+              {!live && <div className="progress-dot" style={{
+                backgroundColor: defaultColor, left: `calc(${(currentTime * 100) /
+                  (playerRef?.current?.duration as number)
+                  }% - 5px)`
+              }} />}
+
+              {!live && (previewTime?.time && previewTime?.left) ? <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div> : ""}
+            </div>
+            {/* Main control */}
+            <div
+              onMouseDown={(e) => e.stopPropagation()}
+              className="main-control-container"
+            >
               <div className="main-settings-content">
-                <div className="main-settings-content volume-container">
-                  <div
-                    onClick={handleToggleMuted}
-                    className="cursor-pointer mr-3 main-settings-content tooltip-container"
-                  >
-                    {muted ? (
-                      <IoMdVolumeOff size={25} />
-                    ) : (
-                      <IoMdVolumeHigh size={25} />
-                    )}
+                <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content tooltip-container">
+                  {play ? <IoMdPause size={23} /> : <IoMdPlay size={23} />}
+                  <div className="tooltip opacity-animation">Play</div>
+                </div>
 
-                    <div className="tooltip">Volume</div>
-                  </div>
-                  <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation width-animation">
-                    <div className="progress-gray">
-                      <div
-                        style={{ width: `${volume}%`, backgroundColor: defaultColor }}
-                        className="progress-main"
-                      />
+                <div className="main-settings-content">
+                  <div className="main-settings-content volume-container">
+                    <div
+                      onClick={handleToggleMuted}
+                      className="cursor-pointer mr-3 main-settings-content tooltip-container"
+                    >
+                      {muted ? (
+                        <IoMdVolumeOff size={25} />
+                      ) : (
+                        <IoMdVolumeHigh size={25} />
+                      )}
 
-                      <div className="progress-dot" style={{
-                        backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
-                      }}
-                      />
+                      <div className="tooltip">Volume</div>
+                    </div>
+                    <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation width-animation">
+                      <div className="progress-gray">
+                        <div
+                          style={{ width: `${volume}%`, backgroundColor: defaultColor }}
+                          className="progress-main"
+                        />
+
+                        <div className="progress-dot" style={{
+                          backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
+                        }}
+                        />
+                      </div>
                     </div>
                   </div>
+                  {!live ? (
+                    <div className="time">
+                      {formatVideoTime(currentTime)}
+                      {" / "}
+                      {formatVideoTime(playerRef?.current?.duration as number)}
+                    </div>
+                  ) : (
+                    <div className="text-sm font-semibold cursor-pointer live-button">Live</div>
+                  )}
                 </div>
-                {!live ? (
-                  <div className="time">
-                    {formatVideoTime(currentTime)}
-                    {" / "}
-                    {formatVideoTime(playerRef?.current?.duration as number)}
-                  </div>
-                ) : (
-                  <div className="text-sm font-semibold cursor-pointer live-button">Live</div>
-                )}
               </div>
-            </div>
-            <div className="main-settings-content">
-              <div className="tooltip-container main-settings-content">
-                <IoMdSettings
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="cursor-pointer mr-3"
-                  size={23}
-                />
-                <div className="tooltip">Settings</div>
-              </div>
-              <div className="tooltip-container main-settings-content">
-                <RiPictureInPictureFill
-                  onClick={handleVideoPicture}
-                  className="cursor-pointer mr-3"
-                  size={23}
-                />
-                <div className="tooltip">PIP</div>
-              </div>
-              <div
-                onClick={handleFullScreen}
-                className="cursor-pointer main-settings-content tooltip-container"
-              >
-                {fullScreen ? (
-                  <BiExitFullscreen size={23} />
-                ) : (
-                  <BiFullscreen size={23} />
-                )}
+              <div className="main-settings-content">
+                <div className="tooltip-container main-settings-content">
+                  <IoMdSettings
+                    onClick={() => setShowSettings(!showSettings)}
+                    className="cursor-pointer mr-3"
+                    size={23}
+                  />
+                  <div className="tooltip">Settings</div>
+                </div>
+                <div className="tooltip-container main-settings-content">
+                  <RiPictureInPictureFill
+                    onClick={handleVideoPicture}
+                    className="cursor-pointer mr-3"
+                    size={23}
+                  />
+                  <div className="tooltip">PIP</div>
+                </div>
+                <div
+                  onClick={handleFullScreen}
+                  className="cursor-pointer main-settings-content tooltip-container"
+                >
+                  {fullScreen ? (
+                    <BiExitFullscreen size={23} />
+                  ) : (
+                    <BiFullscreen size={23} />
+                  )}
 
-                <div className="tooltip">Fullscreen</div>
+                  <div className="tooltip">Fullscreen</div>
+                </div>
               </div>
             </div>
           </div>
