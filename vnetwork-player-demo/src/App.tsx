@@ -1,14 +1,7 @@
 import VPlayer from "vnetwork-player"
-import { useEffect, useRef } from "react"
-
 import './App.css'
 
 const App = () => {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    console.log(ref?.current)
-  }, [ref?.current])
 
   return (
     <VPlayer
@@ -31,7 +24,6 @@ const App = () => {
           url: "/en.vtt"
         },
       ]}
-      playerRef={ref}
     />
   )
 }
