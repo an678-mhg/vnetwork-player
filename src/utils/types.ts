@@ -11,8 +11,8 @@ export interface Source {
 }
 
 export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
-    source: string | Source[];
-    className?: string;
+    source: string | Source[]
+    className?: string
     poster?: string;
     color?: string;
     subtitle?: Subtitle[] | undefined;

@@ -18,40 +18,66 @@ npm i vnetwork-player
 import Player from "vnetwork-player";
 ```
 
-## Basic Usage
+## Examples
+
+### Single src
 
 ```jsx
 
-import VPlayer from "vnetwork-player"
-import { useRef } from "react"
-
-import './App.css'
-
-const App = () => {
-  const ref = useRef<HTMLVideoElement | null>(null)
-
-  return (
-    <VPlayer
-      playerRef={ref}
-      src="https://kd.opstream3.com/20221216/28490_6127c8ea/index.m3u8"
-    />
-  )
-}
-
-export default App
+<VPlayer
+  source="https://example.com/file-video.mp4"
+  // source="https://example.com/file-video.m3u8"
+/>
 
 ```
 
-## Props
+### Multi src and subtitles, autoPlay, custom color
 
-| property                    | type                                     |
-| --------------------------- | -------------------- |
-| src                         | string (m3u8, mp4)   |
-| className?                  | string               |
-| poster?                     | string               |
-| color?                      | string                                    |
-| playerRef                         | React.MutableRefObject<HTMLVideoElement>       |
-| subtitle?                | { lang: string; url: string }[]           |
-| ...props                    | HTMLProps<HTMLVideoElement>      |
+```jsx
+
+<VPlayer
+  source={
+    [
+      { label: "720p", url: "https://example/file/720.mp4" },
+      // { label: "720p", url: "https://example/file/720.m3u8" },
+      { label: "1080p", url: "https://example/file/1080.mp4" }
+      // { label: "1080p", url: "https://example/file/1080.m3u8" },
+    ]
+  }
+  color="#ff0000"
+  autoPlay
+  multiSoucre
+  subtitle={[
+    {
+      lang: "Fr",
+      url: "/fr.vtt"
+    },
+    {
+      lang: "En",
+      url: "/en.vtt"
+    },
+  ]}
+/>
+
+```
+
+### Custom Ref
+
+```jsx
+
+const ref = useRef(null)
+
+useEffect(() => {
+  console.log(ref?.current) // Video element
+}, [ref?.current])
+
+<VPlayer playerRef={ref} source="https://example.com/file-video.mp4" />
+
+```
+
+## Player props
+
+[See here](https://github.com/an678-mhg/vnetwork-player/blob/master/src/utils/types.ts)
+
 
 
