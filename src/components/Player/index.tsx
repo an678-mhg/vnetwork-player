@@ -62,7 +62,7 @@ const Player: React.FC<PlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [fullScreen, setFullScreen] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsType, setSettingsType] = useState<
     "main" | "playspeed" | "quality" | "subtitle"
@@ -81,6 +81,7 @@ const Player: React.FC<PlayerProps> = ({
 
     if (play) {
       setPlay(false);
+      setShowControl(true)
       player?.pause();
     } else {
       setPlay(true);
@@ -163,13 +164,12 @@ const Player: React.FC<PlayerProps> = ({
       setMuted(false);
       if (playerRef !== null && playerRef?.current !== null) {
         playerRef.current.muted = false;
-        setVolume(100);
+
       }
     } else {
       setMuted(true);
       if (playerRef !== null && playerRef?.current !== null) {
         playerRef.current.muted = true;
-        setVolume(0);
       }
     }
   };
@@ -295,22 +295,6 @@ const Player: React.FC<PlayerProps> = ({
     const percent = (e?.clientX - left) / width;
     setVolume(percent * 100)
   };
-
-  // const handleLive = () => {
-  //   if (loading) return
-
-  //   if (!playerRef?.current) return
-  //   if (!hlsRef?.current) return
-
-  //   if (playerRef?.current?.duration - currentTime <= 5) return
-
-  //   const hls = hlsRef?.current
-
-  //   hls.loadSource(sourceMulti?.[currentSource]?.url);
-  //   hls.startLoad()
-
-  //   playerRef.current.play();
-  // }
 
   const handleTurnOffSubtitle = () => {
     setCurrentSubtitle(null);
@@ -500,25 +484,26 @@ const Player: React.FC<PlayerProps> = ({
     }
   }, [])
 
-  // useEffect(() => {
-  //   const handleKeyDown = (e: KeyboardEvent) => {
-  //     console.log(e?.code)
-  //     switch (e?.code) {
-  //       case "Space":
-  //         handlePlayPause()
-  //         break
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      console.log(e?.code)
+      switch (e?.code) {
+        case "Space":
+          console.log("run case space")
+          handlePlayPause()
+          break
 
-  //       default:
-  //         break
-  //     }
-  //   }
+        default:
+          break
+      }
+    }
 
-  //   document.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown)
 
-  //   return () => {
-  //     document.removeEventListener("keydown", handleKeyDown)
-  //   }
-  // }, [])
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [play])
 
   return (
     <div
@@ -548,6 +533,7 @@ const Player: React.FC<PlayerProps> = ({
         onCanPlay={() => setLoading(false)}
         onWaiting={() => setLoading(true)}
         onLoad={() => setLoading(true)}
+        onLoadedMetadata={() => setLoading(true)}
         {...props}
       />
 
