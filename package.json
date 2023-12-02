@@ -1,6 +1,6 @@
 {
   "name": "vnetwork-player",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "A React component custom player support video m3u8, mp4",
   "main": "dist/index.js",
   "files": [
