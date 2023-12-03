@@ -1,3 +1,7 @@
+export const VOLUME_KEY = "vnetwork-player-volume"
+export const MUTED_KEY = "vnetwork-player-muted"
+
+
 export const formatVideoTime = (seconds: number) => {
   try {
     const date = new Date(0);

@@ -4,7 +4,7 @@ import React, {
   useEffect
 } from "react";
 import { BiFullscreen, BiExitFullscreen } from "react-icons/bi";
-import { formatVideoTime, playSpeedOptions } from "../../utils/contants";
+import { MUTED_KEY, VOLUME_KEY, formatVideoTime, playSpeedOptions } from "../../utils/contants";
 import { PlayerProps, Source } from "../../utils/types";
 import { IoMdPlay, IoMdPause, IoMdVolumeHigh, IoMdVolumeOff, IoMdSettings } from "react-icons/io";
 import { RiPictureInPictureFill } from "react-icons/ri"
@@ -59,14 +59,14 @@ const Player: React.FC<PlayerProps> = ({
   const [play, setPlay] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [fullScreen, setFullScreen] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState<boolean>(JSON.parse(localStorage.getItem(MUTED_KEY)!) || false);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsType, setSettingsType] = useState<
     "main" | "playspeed" | "quality" | "subtitle"
   >("main");
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
-  const [volume, setVolume] = useState(100);
+  const [volume, setVolume] = useState(Number(localStorage.getItem(VOLUME_KEY)) || 100);
   const [seeking, setSeeking] = useState(false);
   const [previewTime, setPreviewTime] = useState<{ time: number | null; left: number | null }>({ time: null, left: null })
 
@@ -74,17 +74,7 @@ const Player: React.FC<PlayerProps> = ({
   const playerRef = passedRef || myRef
 
   const handlePlayPause = () => {
-    const player = playerRef.current;
-    if (!player) return;
-
-    if (play) {
-      setPlay(false);
-      setShowControl(true)
-      player?.pause();
-    } else {
-      setPlay(true);
-      player?.play();
-    }
+    setPlay(prev => !prev)
   };
 
   const handleFullScreen = () => {
@@ -102,14 +92,8 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleTimeUpdate = () => {
-    if (seeking) {
-      return;
-    }
-
-    const player = playerRef.current;
-    if (!player) return;
-
-    setCurrentTime(player?.currentTime);
+    if (seeking) return
+    setCurrentTime(playerRef?.current?.currentTime || 0);
   };
 
   const handleSeekTime = (e: any) => {
@@ -158,18 +142,8 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleToggleMuted = () => {
-    if (muted) {
-      setMuted(false);
-      if (playerRef !== null && playerRef?.current !== null) {
-        playerRef.current.muted = false;
-
-      }
-    } else {
-      setMuted(true);
-      if (playerRef !== null && playerRef?.current !== null) {
-        playerRef.current.muted = true;
-      }
-    }
+    setMuted(prev => !prev)
+    localStorage.setItem(MUTED_KEY, JSON.stringify(!muted))
   };
 
   const handleChangePlaySpeed = (index: number, value: number) => {
@@ -291,7 +265,12 @@ const Player: React.FC<PlayerProps> = ({
     const left = volumeRef.current?.getBoundingClientRect()?.left as number
     const width = volumeRef?.current?.getBoundingClientRect()?.width as number
     const percent = (e?.clientX - left) / width;
+
+    if (e?.clientX <= left) return
+    if (e?.clientX >= width + left) return
+
     setVolume(percent * 100)
+    localStorage.setItem(VOLUME_KEY, (percent * 100).toString())
   };
 
   const handleTurnOffSubtitle = () => {
@@ -306,7 +285,7 @@ const Player: React.FC<PlayerProps> = ({
 
   useEffect(() => {
     if (playerRef !== null && playerRef?.current !== null) {
-      playerRef.current.volume = volume / 100;
+      playerRef.current.volume = (volume <= 0 ? 0 : volume) / 100;
     }
   }, [volume]);
 
@@ -319,7 +298,7 @@ const Player: React.FC<PlayerProps> = ({
 
     timeout = setTimeout(() => {
       setShowControl(false);
-    }, 4000);
+    }, 6000);
 
     return () => {
       timeout && clearTimeout(timeout);
@@ -441,12 +420,18 @@ const Player: React.FC<PlayerProps> = ({
   }, [source, sourceMulti?.length, multiSoucre, hlsRef?.current])
 
   useEffect(() => {
+    if (playerRef !== null && playerRef?.current !== null) {
+      playerRef.current.muted = muted
+    }
+  }, [muted])
+
+  useEffect(() => {
     if (!autoPlay) return
+    const initialMuted = localStorage.getItem(MUTED_KEY) ? JSON.parse(localStorage.getItem(MUTED_KEY)!) : (autoPlay ? true : false);
 
     if (playerRef !== null && playerRef?.current !== null) {
-      playerRef.current.muted = true;
-      setMuted(true)
-      setVolume(0)
+      playerRef.current.muted = initialMuted
+      setMuted(initialMuted)
     }
   }, [autoPlay])
 
@@ -484,10 +469,8 @@ const Player: React.FC<PlayerProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log(e?.code)
       switch (e?.code) {
         case "Space":
-          console.log("run case space")
           handlePlayPause()
           break
 
@@ -503,208 +486,203 @@ const Player: React.FC<PlayerProps> = ({
     }
   }, [play])
 
+  useEffect(() => {
+    play ? playerRef?.current?.play() : playerRef?.current?.pause()
+  }, [play])
+
   return (
-    <div id="vnetwork-player">
+    <div
+      ref={videoContainerRef}
+      onMouseMove={() => setShowControl(true)}
+      onMouseLeave={() => {
+        if (seeking) return
+        setShowControl(false);
+      }}
+      onClick={() => setShowControl(true)}
+      className="video-container"
+    >
+      <video
+        ref={playerRef}
+        className={`video ${className || ''}`}
+        poster={poster || ""}
+        onPlay={() => setPlay(true)}
+        onPause={() => setPlay(false)}
+        onTimeUpdate={handleTimeUpdate}
+        onCanPlay={() => setLoading(false)}
+        onWaiting={() => setLoading(true)}
+        onLoad={() => setLoading(true)}
+        onLoadedMetadata={() => setLoading(true)}
+        {...props}
+      />
+
+      {loading && (
+        <div className="center-item-absolute">
+          <CircularProgress />
+        </div>
+      )}
+
       <div
-        ref={videoContainerRef}
-        onMouseMove={() => {
-          setShowControl(true);
-        }}
-        onMouseLeave={() => {
-          if (seeking) {
-            return;
-          }
-
-          setShowControl(false);
-        }}
-        onClick={() => {
-          setShowControl(true)
-        }}
-        className="video-container"
+        onClick={() => setShowSettings(false)}
+        style={{ display: showControl ? "flex" : "none" }}
+        className="control-container opacity-animation"
       >
-        <video
-          ref={playerRef}
-          className={`video ${className || ''}`}
-          poster={poster || ""}
-          onPlay={() => setPlay(true)}
-          onPause={() => setPlay(false)}
-          onTimeUpdate={handleTimeUpdate}
-          onCanPlay={() => setLoading(false)}
-          onWaiting={() => setLoading(true)}
-          onLoad={() => setLoading(true)}
-          onLoadedMetadata={() => setLoading(true)}
-          {...props}
-        />
 
-        {loading && (
-          <div className="center-item-absolute">
-            <CircularProgress />
+        {!loading && <div onClick={handlePlayPause} className="center-item-absolute cursor-pointer">
+          {play ? <IoMdPause size={40} /> : <IoMdPlay size={40} />}
+        </div>}
+
+
+        {/* Menu select play speed, quanlity, subtitle */}
+        {showSettings && (
+          <div
+            onClick={() => setShowSettings(false)}
+            className="settings-container"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="settings-content"
+            >
+              {settingsType === "main" ? (
+                <MainSettings
+                  currentQuality={sourceMulti?.[currentSource]?.label}
+                  currentSpeed={playSpeedOptions?.[currentPlaySpeed]?.label}
+                  setSettingsType={setSettingsType}
+                  currentSubtitle={
+                    typeof currentSubtitle === "number"
+                      ? subtitle?.[currentSubtitle]?.lang
+                      : "Off"
+                  }
+                  haveSubtitle={Boolean(subtitle)}
+                  haveQuality={source?.length > 0}
+                />
+              ) : settingsType === "playspeed" ? (
+                <PlaySpeedSettings
+                  handleChangePlaySpeed={handleChangePlaySpeed}
+                  currentPlaySpeed={currentPlaySpeed}
+                  setSettingsType={setSettingsType}
+                />
+              ) : settingsType === "quality" ? (
+                <QualitySettings
+                  handleChangeSource={handleChangeSource}
+                  currentSource={currentSource}
+                  setSettingsType={setSettingsType}
+                  source={sourceMulti}
+                />
+              ) : (
+                <SubtitleSettings
+                  currentSubtitle={currentSubtitle}
+                  setSettingsType={setSettingsType}
+                  handleChangeSubtitle={handleChangeSubtitle}
+                  subtitle={subtitle!}
+                  handleTurnOffSubtitle={handleTurnOffSubtitle}
+                />
+              )}
+            </div>
           </div>
         )}
-
-        <div
-          onClick={() => setShowSettings(false)}
-          style={{ display: showControl ? "flex" : "none" }}
-          className="control-container opacity-animation"
-        >
-
-          {!loading && <div onClick={handlePlayPause} className="center-item-absolute cursor-pointer">
-            {play ? <IoMdPause size={40} /> : <IoMdPlay size={40} />}
-          </div>}
-
-
-          {/* Menu select play speed, quanlity, subtitle */}
-          {showSettings && (
-            <div
-              onClick={() => setShowSettings(false)}
-              className="settings-container"
-            >
+        <div onClick={(e) => e.stopPropagation()} className="w-full">
+          {/* Seek time */}
+          <div ref={seekRef} onClick={handleSeekTime} className="progress tooltip-container">
+            <div className="progress-gray">
               <div
-                onClick={(e) => e.stopPropagation()}
-                className="settings-content"
-              >
-                {settingsType === "main" ? (
-                  <MainSettings
-                    currentQuality={sourceMulti?.[currentSource]?.label}
-                    currentSpeed={playSpeedOptions?.[currentPlaySpeed]?.label}
-                    setSettingsType={setSettingsType}
-                    currentSubtitle={
-                      typeof currentSubtitle === "number"
-                        ? subtitle?.[currentSubtitle]?.lang
-                        : "Off"
-                    }
-                    haveSubtitle={Boolean(subtitle)}
-                    haveQuality={source?.length > 0}
-                  />
-                ) : settingsType === "playspeed" ? (
-                  <PlaySpeedSettings
-                    handleChangePlaySpeed={handleChangePlaySpeed}
-                    currentPlaySpeed={currentPlaySpeed}
-                    setSettingsType={setSettingsType}
-                  />
-                ) : settingsType === "quality" ? (
-                  <QualitySettings
-                    handleChangeSource={handleChangeSource}
-                    currentSource={currentSource}
-                    setSettingsType={setSettingsType}
-                    source={sourceMulti}
-                  />
+                style={{
+                  width: live
+                    ? "100%"
+                    : `${(currentTime * 100) /
+                    (playerRef?.current?.duration as number)
+                    }%`,
+                  backgroundColor: defaultColor,
+                }}
+                className="progress-main"
+              />
+            </div>
+
+            {!live && <div className="progress-dot" style={{
+              backgroundColor: defaultColor, left: `calc(${(currentTime * 100) /
+                (playerRef?.current?.duration as number)
+                }% - 5px)`
+            }} />}
+
+            {!live && (previewTime?.time && previewTime?.left) ? <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div> : ""}
+          </div>
+          {/* Main control */}
+          <div
+            onMouseDown={(e) => e.stopPropagation()}
+            className="main-control-container"
+          >
+            <div className="main-settings-content">
+              <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content tooltip-container">
+                {play ? <IoMdPause size={23} /> : <IoMdPlay size={23} />}
+                <div className="tooltip opacity-animation">Play</div>
+              </div>
+
+              <div className="main-settings-content">
+                <div className="main-settings-content volume-container">
+                  <div
+                    onClick={handleToggleMuted}
+                    className="cursor-pointer mr-3 main-settings-content tooltip-container"
+                  >
+                    {muted ? (
+                      <IoMdVolumeOff size={25} />
+                    ) : (
+                      <IoMdVolumeHigh size={25} />
+                    )}
+
+                    <div className="tooltip">Volume</div>
+                  </div>
+                  <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation width-animation">
+                    <div className="progress-gray">
+                      <div
+                        style={{ width: `${volume}%`, backgroundColor: defaultColor }}
+                        className="progress-main"
+                      />
+
+                      <div className="progress-dot" style={{
+                        backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
+                      }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                {!live ? (
+                  <div className="time">
+                    {formatVideoTime(currentTime)}
+                    {" / "}
+                    {formatVideoTime(playerRef?.current?.duration as number)}
+                  </div>
                 ) : (
-                  <SubtitleSettings
-                    currentSubtitle={currentSubtitle}
-                    setSettingsType={setSettingsType}
-                    handleChangeSubtitle={handleChangeSubtitle}
-                    subtitle={subtitle!}
-                    handleTurnOffSubtitle={handleTurnOffSubtitle}
-                  />
+                  <div className="text-sm font-semibold cursor-pointer live-button">Live</div>
                 )}
               </div>
             </div>
-          )}
-          <div onClick={(e) => e.stopPropagation()} className="w-full">
-            {/* Seek time */}
-            <div ref={seekRef} onClick={handleSeekTime} className="progress tooltip-container">
-              <div className="progress-gray">
-                <div
-                  style={{
-                    width: live
-                      ? "100%"
-                      : `${(currentTime * 100) /
-                      (playerRef?.current?.duration as number)
-                      }%`,
-                    backgroundColor: defaultColor,
-                  }}
-                  className="progress-main"
+            <div className="main-settings-content">
+              <div className="tooltip-container main-settings-content">
+                <IoMdSettings
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="cursor-pointer mr-3"
+                  size={23}
                 />
+                <div className="tooltip">Settings</div>
               </div>
-
-              {!live && <div className="progress-dot" style={{
-                backgroundColor: defaultColor, left: `calc(${(currentTime * 100) /
-                  (playerRef?.current?.duration as number)
-                  }% - 5px)`
-              }} />}
-
-              {!live && (previewTime?.time && previewTime?.left) ? <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div> : ""}
-            </div>
-            {/* Main control */}
-            <div
-              onMouseDown={(e) => e.stopPropagation()}
-              className="main-control-container"
-            >
-              <div className="main-settings-content">
-                <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content tooltip-container">
-                  {play ? <IoMdPause size={23} /> : <IoMdPlay size={23} />}
-                  <div className="tooltip opacity-animation">Play</div>
-                </div>
-
-                <div className="main-settings-content">
-                  <div className="main-settings-content volume-container">
-                    <div
-                      onClick={handleToggleMuted}
-                      className="cursor-pointer mr-3 main-settings-content tooltip-container"
-                    >
-                      {muted ? (
-                        <IoMdVolumeOff size={25} />
-                      ) : (
-                        <IoMdVolumeHigh size={25} />
-                      )}
-
-                      <div className="tooltip">Volume</div>
-                    </div>
-                    <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation width-animation">
-                      <div className="progress-gray">
-                        <div
-                          style={{ width: `${volume}%`, backgroundColor: defaultColor }}
-                          className="progress-main"
-                        />
-
-                        <div className="progress-dot" style={{
-                          backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
-                        }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {!live ? (
-                    <div className="time">
-                      {formatVideoTime(currentTime)}
-                      {" / "}
-                      {formatVideoTime(playerRef?.current?.duration as number)}
-                    </div>
-                  ) : (
-                    <div className="text-sm font-semibold cursor-pointer live-button">Live</div>
-                  )}
-                </div>
+              <div className="tooltip-container main-settings-content">
+                <RiPictureInPictureFill
+                  onClick={handleVideoPicture}
+                  className="cursor-pointer mr-3"
+                  size={23}
+                />
+                <div className="tooltip">PIP</div>
               </div>
-              <div className="main-settings-content">
-                <div className="tooltip-container main-settings-content">
-                  <IoMdSettings
-                    onClick={() => setShowSettings(!showSettings)}
-                    className="cursor-pointer mr-3"
-                    size={23}
-                  />
-                  <div className="tooltip">Settings</div>
-                </div>
-                <div className="tooltip-container main-settings-content">
-                  <RiPictureInPictureFill
-                    onClick={handleVideoPicture}
-                    className="cursor-pointer mr-3"
-                    size={23}
-                  />
-                  <div className="tooltip">PIP</div>
-                </div>
-                <div
-                  onClick={handleFullScreen}
-                  className="cursor-pointer main-settings-content tooltip-container"
-                >
-                  {fullScreen ? (
-                    <BiExitFullscreen size={23} />
-                  ) : (
-                    <BiFullscreen size={23} />
-                  )}
+              <div
+                onClick={handleFullScreen}
+                className="cursor-pointer main-settings-content tooltip-container"
+              >
+                {fullScreen ? (
+                  <BiExitFullscreen size={23} />
+                ) : (
+                  <BiFullscreen size={23} />
+                )}
 
-                  <div className="tooltip">Fullscreen</div>
-                </div>
+                <div className="tooltip">Fullscreen</div>
               </div>
             </div>
           </div>
