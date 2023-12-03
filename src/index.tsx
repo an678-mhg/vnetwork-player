@@ -4,9 +4,11 @@ import Player from "./components/Player"
 import { PlayerProps } from "./utils/types"
 
 const VPlayer: React.FC<PlayerProps> = props => {
-    return <ErrorBoundary>
-        <Player {...props} />
-    </ErrorBoundary>
+    return <div id="vnetwork-player">
+        <ErrorBoundary>
+            <Player {...props} />
+        </ErrorBoundary>
+    </div>
 }
 
 export default VPlayer

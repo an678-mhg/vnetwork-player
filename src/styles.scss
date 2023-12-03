@@ -1,4 +1,7 @@
 #vnetwork-player {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background-color: #222;
 
   .video {
     width: 100%;
@@ -285,20 +288,16 @@
       width: 300px;
     }
 
-    .volume {
-      display: none;
-    }
-
-    .volume-container:hover .volume {
-      display: block;
-    }
-
     .tooltip-container:hover .tooltip {
       display: block;
     }
 
     .error-image {
       width: 200px;
+    }
+
+    .volume {
+      display: block;
     }
   }
 }
