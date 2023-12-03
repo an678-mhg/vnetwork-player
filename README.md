@@ -2,7 +2,7 @@
 
 ## Demo Player 
 
-[https://stackblitz.com/edit/vitejs-vite-prsdgv?file=src%2FApp.tsx](https://stackblitz.com/edit/vitejs-vite-prsdgv?file=src%2FApp.tsx)
+<a href="https://stackblitz.com/edit/vitejs-vite-prsdgv?file=src%2FApp.tsx" target="_blank">Demo in stackblitz</a>
 
 ## Installation
 
@@ -78,7 +78,7 @@ useEffect(() => {
 
 ## Player props
 
-[See here](https://github.com/an678-mhg/vnetwork-player/blob/master/src/utils/types.ts)
+<a href="https://github.com/an678-mhg/vnetwork-player/blob/master/src/utils/types.ts" target="_blank">https://github.com/an678-mhg/vnetwork-player/blob/master/src/utils/types.ts</a>
 
 
 
