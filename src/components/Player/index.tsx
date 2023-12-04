@@ -9,9 +9,9 @@ import MainSettings from "./Settings/MainSettings";
 import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
 import QualitySettings from "./Settings/QualitySettings";
 import SubtitleSettings from "./Settings/SubtitleSettings";
-import Hls from "hls.js";
 import CircularProgress from "../CircularProgress";
 import { IconFullscreen, IconFullscreenExit, IconBxPlay, IconPlayPause, IconVolumeMedium, IconVolumeMute, IconSettingsSharp, IconPictureInPictureFill } from '../Icons'
+import Hls from 'hls.js'
 
 const Player: React.FC<PlayerProps> = ({
   color,
