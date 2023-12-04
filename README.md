@@ -22,34 +22,42 @@ npm i vnetwork-player
 ## Import
 
 ```jsx
-import Player from "vnetwork-player";
+import VPlayer from "vnetwork-player";
 import "vnetwork-player/dist/vnetwork-player.min.css" // import css
 ```
 
 ## Examples
 
-### Single src
+### Video MP4
 
 ```jsx
+
+// mp4 single src
 
 <VPlayer
   source="https://example.com/file-video.mp4"
-  // source="https://example.com/file-video.m3u8"
+  color="#ff0000"
+  autoPlay
+  multiSoucre
+  subtitle={[
+    {
+      lang: "Fr",
+      url: "/fr.vtt"
+    },
+    {
+      lang: "En",
+      url: "/en.vtt"
+    },
+  ]}
 />
 
-```
-
-### Multi src and subtitles, autoPlay, custom color
-
-```jsx
+// mp4 multiple src
 
 <VPlayer
   source={
     [
       { label: "720p", url: "https://example/file/720.mp4" },
-      // { label: "720p", url: "https://example/file/720.m3u8" },
       { label: "1080p", url: "https://example/file/1080.mp4" }
-      // { label: "1080p", url: "https://example/file/1080.m3u8" },
     ]
   }
   color="#ff0000"
@@ -69,6 +77,64 @@ import "vnetwork-player/dist/vnetwork-player.min.css" // import css
 
 ```
 
+### Video M3U8
+
+```bash
+npm i hls.js
+# or
+# yarn add hls.js
+```
+
+```jsx
+import Hls from 'hls.js'
+
+// m3u8 single src
+
+<VPlayer
+  source="https://example.com/file-video.mp4"
+  color="#ff0000"
+  autoPlay
+  multiSoucre
+  subtitle={[
+    {
+      lang: "Fr",
+      url: "/fr.vtt"
+    },
+    {
+      lang: "En",
+      url: "/en.vtt"
+    },
+  ]}
+  Hls={Hls}
+/>
+
+// m3u8 multiple src
+
+<VPlayer
+  source={
+    [
+      { label: "720p", url: "https://example/file/720.mp4" },
+      { label: "1080p", url: "https://example/file/1080.mp4" }
+    ]
+  }
+  color="#ff0000"
+  autoPlay
+  multiSoucre
+  subtitle={[
+    {
+      lang: "Fr",
+      url: "/fr.vtt"
+    },
+    {
+      lang: "En",
+      url: "/en.vtt"
+    },
+  ]}
+  Hls={Hls}
+/>
+
+```
+
 ### Custom Ref
 
 ```jsx
@@ -79,7 +145,7 @@ useEffect(() => {
   console.log(ref?.current) // Video element
 }, [ref?.current])
 
-<VPlayer playerRef={ref} source="https://example.com/file-video.mp4" />
+<VPlayer playerRef={ref} />
 
 ```
 

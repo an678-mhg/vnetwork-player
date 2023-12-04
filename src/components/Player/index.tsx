@@ -11,7 +11,6 @@ import QualitySettings from "./Settings/QualitySettings";
 import SubtitleSettings from "./Settings/SubtitleSettings";
 import CircularProgress from "../CircularProgress";
 import { IconFullscreen, IconFullscreenExit, IconBxPlay, IconPlayPause, IconVolumeMedium, IconVolumeMute, IconSettingsSharp, IconPictureInPictureFill } from '../Icons'
-import Hls from 'hls.js'
 
 const Player: React.FC<PlayerProps> = ({
   color,
@@ -22,24 +21,15 @@ const Player: React.FC<PlayerProps> = ({
   source: src,
   live,
   autoPlay,
-  multiSoucre = false,
+  Hls,
   ...props
 }) => {
+  // @ts-ignore
   const hlsRef = useRef<Hls | null>(null)
 
   if (!src) {
     if (hlsRef.current) hlsRef.current?.destroy()
     throw new Error("Missing src props")
-  }
-
-  if (multiSoucre && !Array.isArray(src)) {
-    if (hlsRef.current) hlsRef.current?.destroy()
-    throw new Error("multiSource so source must be an array")
-  }
-
-  if (!multiSoucre && typeof src !== "string") {
-    if (hlsRef.current) hlsRef.current?.destroy()
-    throw new Error("!multiSource so source must be an string")
   }
 
   const source = src as string
@@ -155,16 +145,12 @@ const Player: React.FC<PlayerProps> = ({
 
   const handleChangeSource = (index: number) => {
     if (!playerRef?.current) return;
-
     if (currentSource === index) return
 
     setCurrentSource(index);
 
     const existTrack = playerRef?.current?.querySelector("track");
-
-    if (existTrack) {
-      existTrack.remove();
-    }
+    if (existTrack) existTrack.remove()
 
     if (hlsRef?.current) {
       const hls = hlsRef?.current;
@@ -203,7 +189,10 @@ const Player: React.FC<PlayerProps> = ({
   }
 
   const handleLoadVideoM3u8 = () => {
+    if (!Hls) throw Error("To use video type m3u8 try install `npm i hls.js` and pass props Hls")
+
     if (!playerRef?.current) return;
+    // @ts-ignore
     if (!Hls.isSupported()) throw Error("Not support hls");
 
     if (hlsRef?.current) {
@@ -215,8 +204,9 @@ const Player: React.FC<PlayerProps> = ({
 
     const hls = hlsRef?.current;
 
+    // @ts-ignore
     hls.on(Hls.Events.MANIFEST_PARSED, function (_, data) {
-      if (multiSoucre) {
+      if (typeof source !== 'string') {
         // @ts-ignore
         return setSourceMulti(source as Source[])
       }
@@ -235,7 +225,7 @@ const Player: React.FC<PlayerProps> = ({
 
     hls.attachMedia(playerRef?.current);
 
-    if (!multiSoucre) {
+    if (typeof source === 'string') {
       hls.loadSource(source);
     } else {
       // @ts-ignore
@@ -415,7 +405,7 @@ const Player: React.FC<PlayerProps> = ({
         hlsRef?.current?.destroy()
       }
     }
-  }, [source, sourceMulti?.length, multiSoucre, hlsRef?.current])
+  }, [source, sourceMulti?.length, hlsRef?.current])
 
   useEffect(() => {
     if (playerRef !== null && playerRef?.current !== null) {
@@ -488,6 +478,12 @@ const Player: React.FC<PlayerProps> = ({
     if (!play) setShowControl(true)
     play ? playerRef?.current?.play() : playerRef?.current?.pause()
   }, [play])
+
+  useEffect(() => {
+    return () => {
+      if (hlsRef?.current) hlsRef?.current?.destroy()
+    }
+  }, [])
 
   return (
     <div
@@ -676,7 +672,7 @@ const Player: React.FC<PlayerProps> = ({
                 className="cursor-pointer main-settings-content tooltip-container"
               >
                 {fullScreen ? (
-                  <IconFullscreenExit fontSize={23} />
+                  <IconFullscreenExit fontSize={30} />
                 ) : (
                   <IconFullscreen fontSize={23} />
                 )}

@@ -19,4 +19,5 @@ export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
     playerRef?: React.MutableRefObject<HTMLVideoElement | null>;
     live?: boolean
     multiSoucre?: boolean
+    Hls?: any
 }
