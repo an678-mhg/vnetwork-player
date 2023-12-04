@@ -1,10 +1,11 @@
 # VNETWORK Player
 
-[![Build Size](https://img.shields.io/bundlephobia/minzip/vnetwork-player?label=Bundle%20size&style=flat&color=success)](https://bundlephobia.com/result?p=vnetwork-player)
-[![Version](https://img.shields.io/npm/v/vnetwork-player?style=flat&color=success)](https://www.npmjs.com/package/vnetwork-player)
-[![Downloads](https://img.shields.io/npm/dt/vnetwork-player.svg?style=flat&color=success)](https://www.npmjs.com/package/vnetwork-player)
+![NPM Downloads](https://img.shields.io/npm/dm/vnetwork-player?style=flat-square)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/vnetwork-player)
+![npm bundle size](https://img.shields.io/bundlephobia/min/vnetwork-player)
 
-A React video player library with YouTube-like UI
+A React component custom player support video m3u8, mp4
 
 
 ## Demo Player 
