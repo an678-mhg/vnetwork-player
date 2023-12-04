@@ -1,7 +1,5 @@
 import React from "react";
-import { AiOutlineRight } from "react-icons/ai";
-import { MdOutlineHighQuality, MdOutlineSubtitles } from "react-icons/md";
-import { SiSpeedtest } from "react-icons/si";
+import { IconChevronRight, IconSpeedtest, IconQualityHigh, IconSubtitles } from '../../Icons'
 
 interface MainSettingsProps {
   setSettingsType: React.Dispatch<
@@ -29,14 +27,14 @@ const MainSettings: React.FC<MainSettingsProps> = ({
         className="main-settings cursor-pointer "
       >
         <div className="main-settings-content">
-          <SiSpeedtest size={20} className="mr-3" />
+          <IconSpeedtest fontSize={20} className="mr-3" />
           <p className="text-sm font-semibold">Play speed</p>
         </div>
         <div className="main-settings-content">
           <p className="text-sm font-semibold line-clamp-1 mr-3">
             {currentSpeed}
           </p>
-          <AiOutlineRight size={20} />
+          <IconChevronRight fontSize={20} />
         </div>
       </div>
       {haveQuality && (
@@ -45,14 +43,14 @@ const MainSettings: React.FC<MainSettingsProps> = ({
           className="main-settings-content justify-between cursor-pointer p-2 "
         >
           <div className="main-settings-content">
-            <MdOutlineHighQuality size={20} className="mr-3" />
+            <IconQualityHigh fontSize={22} className="mr-3" />
             <p className="text-sm font-semibold">Quality</p>
           </div>
           <div className="main-settings-content">
             <p className="text-sm font-semibold line-clamp-1 mr-3">
               {currentQuality}
             </p>
-            <AiOutlineRight size={20} />
+            <IconChevronRight fontSize={20} />
           </div>
         </div>
       )}
@@ -62,14 +60,14 @@ const MainSettings: React.FC<MainSettingsProps> = ({
           className="main-settings-content justify-between cursor-pointer p-2"
         >
           <div className="main-settings-content">
-            <MdOutlineSubtitles size={20} className="mr-3" />
+            <IconSubtitles fontSize={22} className="mr-3" />
             <p className="text-sm font-semibold">Subtitle</p>
           </div>
           <div className="main-settings-content">
             <p className="text-sm font-semibold line-clamp-1 mr-3">
               {currentSubtitle}
             </p>
-            <AiOutlineRight size={20} />
+            <IconChevronRight fontSize={20} />
           </div>
         </div>
       )}

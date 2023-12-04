@@ -3,17 +3,15 @@ import React, {
   useState,
   useEffect
 } from "react";
-import { BiFullscreen, BiExitFullscreen } from "react-icons/bi";
 import { MUTED_KEY, VOLUME_KEY, formatVideoTime, playSpeedOptions } from "../../utils/contants";
 import { PlayerProps, Source } from "../../utils/types";
-import { IoMdPlay, IoMdPause, IoMdVolumeHigh, IoMdVolumeOff, IoMdSettings } from "react-icons/io";
-import { RiPictureInPictureFill } from "react-icons/ri"
 import MainSettings from "./Settings/MainSettings";
 import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
 import QualitySettings from "./Settings/QualitySettings";
 import SubtitleSettings from "./Settings/SubtitleSettings";
 import Hls from "hls.js";
 import CircularProgress from "../CircularProgress";
+import { IconFullscreen, IconFullscreenExit, IconBxPlay, IconPlayPause, IconVolumeMedium, IconVolumeMute, IconSettingsSharp, IconPictureInPictureFill } from '../Icons'
 
 const Player: React.FC<PlayerProps> = ({
   color,
@@ -487,6 +485,7 @@ const Player: React.FC<PlayerProps> = ({
   }, [play])
 
   useEffect(() => {
+    if (!play) setShowControl(true)
     play ? playerRef?.current?.play() : playerRef?.current?.pause()
   }, [play])
 
@@ -528,7 +527,7 @@ const Player: React.FC<PlayerProps> = ({
       >
 
         {!loading && <div onClick={handlePlayPause} className="center-item-absolute cursor-pointer">
-          {play ? <IoMdPause size={40} /> : <IoMdPlay size={40} />}
+          {play ? <IconPlayPause fontSize={60} /> : <IconBxPlay fontSize={60} />}
         </div>}
 
 
@@ -612,7 +611,7 @@ const Player: React.FC<PlayerProps> = ({
           >
             <div className="main-settings-content">
               <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content tooltip-container">
-                {play ? <IoMdPause size={23} /> : <IoMdPlay size={23} />}
+                {play ? <IconPlayPause fontSize={28} /> : <IconBxPlay fontSize={28} />}
                 <div className="tooltip opacity-animation">Play</div>
               </div>
 
@@ -623,9 +622,9 @@ const Player: React.FC<PlayerProps> = ({
                     className="cursor-pointer mr-3 main-settings-content tooltip-container"
                   >
                     {muted ? (
-                      <IoMdVolumeOff size={25} />
+                      <IconVolumeMute fontSize={25} />
                     ) : (
-                      <IoMdVolumeHigh size={25} />
+                      <IconVolumeMedium fontSize={25} />
                     )}
 
                     <div className="tooltip">Volume</div>
@@ -657,18 +656,18 @@ const Player: React.FC<PlayerProps> = ({
             </div>
             <div className="main-settings-content">
               <div className="tooltip-container main-settings-content">
-                <IoMdSettings
+                <IconSettingsSharp
                   onClick={() => setShowSettings(!showSettings)}
                   className="cursor-pointer mr-3"
-                  size={23}
+                  fontSize={23}
                 />
                 <div className="tooltip">Settings</div>
               </div>
               <div className="tooltip-container main-settings-content">
-                <RiPictureInPictureFill
+                <IconPictureInPictureFill
                   onClick={handleVideoPicture}
                   className="cursor-pointer mr-3"
-                  size={23}
+                  fontSize={23}
                 />
                 <div className="tooltip">PIP</div>
               </div>
@@ -677,9 +676,9 @@ const Player: React.FC<PlayerProps> = ({
                 className="cursor-pointer main-settings-content tooltip-container"
               >
                 {fullScreen ? (
-                  <BiExitFullscreen size={23} />
+                  <IconFullscreenExit fontSize={23} />
                 ) : (
-                  <BiFullscreen size={23} />
+                  <IconFullscreen fontSize={23} />
                 )}
 
                 <div className="tooltip">Fullscreen</div>

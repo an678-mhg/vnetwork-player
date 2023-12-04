@@ -1,6 +1,5 @@
 import React from "react";
-import { AiOutlineLeft } from "react-icons/ai";
-import { BsCheckLg } from "react-icons/bs";
+import { IconChevronLeft, IconCheckLg } from '../../Icons'
 import { Source } from "../../../utils/types";
 
 interface QualitySettingsProps {
@@ -24,7 +23,7 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
         onClick={() => setSettingsType("main")}
         className="main-settings-content p-2 cursor-pointer"
       >
-        <AiOutlineLeft size={20} className="mr-3" />
+        <IconChevronLeft fontSize={20} className="mr-3" />
         <p className="text-sm font-semibold">Quality</p>
       </div>
       <div>
@@ -35,7 +34,7 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
             key={item?.url}
           >
             <div className="icon-20px mr-3">
-              {currentSource === index && <BsCheckLg size={20} />}
+              {currentSource === index && <IconCheckLg fontSize={20} />}
             </div>
             <p>{item?.label}</p>
           </div>

@@ -1,6 +1,5 @@
 import React from "react";
-import { AiOutlineLeft } from "react-icons/ai";
-import { BsCheckLg } from "react-icons/bs";
+import { IconChevronLeft, IconCheckLg } from '../../Icons'
 import { Subtitle } from "../../../utils/types";
 
 interface SubtitleSettingsProps {
@@ -26,7 +25,7 @@ const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
         onClick={() => setSettingsType("main")}
         className="main-settings-content  p-2 cursor-pointer"
       >
-        <AiOutlineLeft size={20} className="mr-3" />
+        <IconChevronLeft fontSize={20} className="mr-3" />
         <p className="text-sm font-semibold">Subtitle</p>
       </div>
       <div>
@@ -35,7 +34,7 @@ const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
           className="p-2 text-sm font-semibold main-settings-content cursor-pointer"
         >
           <div className="icon-20px mr-3">
-            {currentSubtitle === null && <BsCheckLg size={20} />}
+            {currentSubtitle === null && <IconCheckLg fontSize={20} />}
           </div>
           <p>Off</p>
         </div>
@@ -46,7 +45,7 @@ const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
             key={item?.url}
           >
             <div className="icon-20px mr-3">
-              {currentSubtitle === index && <BsCheckLg size={20} />}
+              {currentSubtitle === index && <IconCheckLg fontSize={20} />}
             </div>
             <p>{item?.lang}</p>
           </div>
