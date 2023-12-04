@@ -1,4 +1,11 @@
-# VNETWORK - Player
+# VNETWORK Player
+
+[![Build Size](https://img.shields.io/bundlephobia/minzip/vnetwork-player?label=Bundle%20size&style=flat&color=success)](https://bundlephobia.com/result?p=vnetwork-player)
+[![Version](https://img.shields.io/npm/v/vnetwork-player?style=flat&color=success)](https://www.npmjs.com/package/vnetwork-player)
+[![Downloads](https://img.shields.io/npm/dt/vnetwork-player.svg?style=flat&color=success)](https://www.npmjs.com/package/vnetwork-player)
+
+A React video player library with YouTube-like UI
+
 
 ## Demo Player 
 
