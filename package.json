@@ -14,6 +14,9 @@
   "author": "An Nguyen",
   "license": "MIT",
   "devDependencies": {
+    "@size-limit/esbuild": "^11.0.0",
+    "@size-limit/esbuild-why": "^11.0.0",
+    "@size-limit/preset-small-lib": "^11.0.0",
     "@types/hls.js": "^1.0.0",
     "@types/node": "^20.10.1",
     "@types/react": "^18.2.39",
@@ -22,6 +25,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sass": "^1.69.5",
+    "size-limit": "^11.0.0",
     "typescript": "^5.3.2"
   },
   "dependencies": {
@@ -30,8 +34,20 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0"
   },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "10 kB"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/an678-mhg/vnetwork-player"
-  }
+  },
+  "keywords": [
+    "vnetwork",
+    "player",
+    "react-player",
+    "vnetwork-player"
+  ]
 }
