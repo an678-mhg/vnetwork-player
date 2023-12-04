@@ -2,7 +2,7 @@
 
 ![NPM Downloads](https://img.shields.io/npm/dm/vnetwork-player?style=flat-square)
 ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/vnetwork-player)
-[![Build Size](https://img.shields.io/bundlephobia/minzip/vnetwork-player?label=Bundle%20size&style=flat&color=success)](https://bundlephobia.com/package/vnetwork-player@1.1.5)
+[![Build Size](https://img.shields.io/bundlephobia/minzip/vnetwork-player?label=Bundle%20size&style=flat&color=success)](https://bundlephobia.com/result?p=vnetwork-player)
 [![Version](https://img.shields.io/npm/v/vnetwork-player?style=flat&color=success)](https://www.npmjs.com/package/vnetwork-player)
 
 A React component custom player support video m3u8, mp4
