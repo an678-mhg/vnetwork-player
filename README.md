@@ -39,7 +39,6 @@ import "vnetwork-player/dist/vnetwork-player.min.css" // import css
   source="https://example.com/file-video.mp4"
   color="#ff0000"
   autoPlay
-  multiSoucre
   subtitle={[
     {
       lang: "Fr",
@@ -63,7 +62,6 @@ import "vnetwork-player/dist/vnetwork-player.min.css" // import css
   }
   color="#ff0000"
   autoPlay
-  multiSoucre
   subtitle={[
     {
       lang: "Fr",
@@ -95,7 +93,6 @@ import Hls from 'hls.js'
   source="https://example.com/file-video.mp4"
   color="#ff0000"
   autoPlay
-  multiSoucre
   subtitle={[
     {
       lang: "Fr",
@@ -120,7 +117,6 @@ import Hls from 'hls.js'
   }
   color="#ff0000"
   autoPlay
-  multiSoucre
   subtitle={[
     {
       lang: "Fr",

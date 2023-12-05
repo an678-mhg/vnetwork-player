@@ -200,7 +200,7 @@ const Player: React.FC<PlayerProps> = ({
     }
 
     // @ts-ignore
-    hlsRef?.current = new Hls();
+    hlsRef.current = new Hls();
 
     const hls = hlsRef?.current;
 
