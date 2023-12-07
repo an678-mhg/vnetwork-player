@@ -3,7 +3,7 @@ import React, {
   useState,
   useEffect
 } from "react";
-import { MUTED_KEY, VOLUME_KEY, formatVideoTime, playSpeedOptions } from "../../utils/contants";
+import { MUTED_KEY, VOLUME_KEY, formatVideoTime, playSpeedOptions, removeSearchParams } from "../../utils/contants";
 import { PlayerProps, Source } from "../../utils/types";
 import MainSettings from "./Settings/MainSettings";
 import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
@@ -382,10 +382,12 @@ const Player: React.FC<PlayerProps> = ({
   }, [currentSubtitle, currentSource]);
 
   useEffect(() => {
-    const type = typeof source === "string" ? source?.split(".")[source?.split(".")?.length - 1]
+    const type = typeof source === "string" ? removeSearchParams(source)?.split(".")[source?.split(".")?.length - 1]
       :
       // @ts-ignore
-      source?.[0]?.url?.split(".")[source?.[0]?.url?.split(".")?.length - 1];
+      removeSearchParams(source?.[0]?.url)?.split(".")[source?.[0]?.url?.split(".")?.length - 1];
+
+    console.log(type)
 
     if (type === "mp4") {
       handleLoadVideoMp4()

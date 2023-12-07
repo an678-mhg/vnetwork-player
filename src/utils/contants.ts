@@ -50,3 +50,7 @@ export const playSpeedOptions = [
     value: 2,
   },
 ];
+
+export const removeSearchParams = (url: string) => {
+  return url.split("?")?.[0]
+}
