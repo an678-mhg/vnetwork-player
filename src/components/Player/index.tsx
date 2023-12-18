@@ -387,8 +387,6 @@ const Player: React.FC<PlayerProps> = ({
       // @ts-ignore
       removeSearchParams(source?.[0]?.url)?.split(".")[source?.[0]?.url?.split(".")?.length - 1];
 
-    console.log(type)
-
     if (type === "mp4") {
       handleLoadVideoMp4()
     } else if (type === "m3u8") {
