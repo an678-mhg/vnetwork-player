@@ -12,7 +12,9 @@ A React component custom player support video m3u8, mp4
 
 ## Demo Player 
 
-<a href="https://stackblitz.com/edit/vitejs-vite-prsdgv?file=src%2FApp.tsx" target="_blank">Demo in stackblitz</a>
+<a href="https://react-anime-nine.vercel.app/anime/watch/spy-x-family/55736/m3u8" target="_blank">
+  https://react-anime-nine.vercel.app/anime/watch/spy-x-family/55736/m3u8
+</a>
 
 ## Installation
 
