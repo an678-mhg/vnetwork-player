@@ -1,15 +1,15 @@
 import React, { FC, ReactElement, useEffect, useState } from "react";
 
 const ClientRender: FC<{ children: ReactElement }> = ({ children }) => {
-    const [rendered, setRendered] = useState(typeof window !== "undefined");
+  const [rendered, setRendered] = useState(typeof window !== "undefined");
 
-    useEffect(() => {
-        setRendered(true);
-    }, []);
+  useEffect(() => {
+    setRendered(true);
+  }, []);
 
-    if (rendered) return children;
+  if (rendered) return children;
 
-    return <></>;
+  return <></>;
 };
 
 export default ClientRender;

@@ -1,6 +1,6 @@
 import { playSpeedOptions } from "../../../utils/contants";
 import React from "react";
-import { IconChevronLeft, IconCheckLg } from '../../Icons'
+import { IconChevronLeft, IconCheckLg } from "../../Icons";
 
 interface PlaySpeedSettingsProps {
   setSettingsType: React.Dispatch<

@@ -1,5 +1,5 @@
 import React from "react";
-import { IconChevronLeft, IconCheckLg } from '../../Icons'
+import { IconChevronLeft, IconCheckLg } from "../../Icons";
 import { Source } from "../../../utils/types";
 
 interface QualitySettingsProps {

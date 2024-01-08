@@ -1,6 +1,5 @@
-export const VOLUME_KEY = "vnetwork-player-volume"
-export const MUTED_KEY = "vnetwork-player-muted"
-
+export const VOLUME_KEY = "vnetwork-player-volume";
+export const MUTED_KEY = "vnetwork-player-muted";
 
 export const formatVideoTime = (seconds: number) => {
   try {
@@ -52,5 +51,5 @@ export const playSpeedOptions = [
 ];
 
 export const removeSearchParams = (url: string) => {
-  return url.split("?")?.[0]
-}
+  return url.split("?")?.[0];
+};

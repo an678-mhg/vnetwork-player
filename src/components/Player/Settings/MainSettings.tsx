@@ -1,5 +1,10 @@
 import React from "react";
-import { IconChevronRight, IconSpeedtest, IconQualityHigh, IconSubtitles } from '../../Icons'
+import {
+  IconChevronRight,
+  IconSpeedtest,
+  IconQualityHigh,
+  IconSubtitles,
+} from "../../Icons";
 
 interface MainSettingsProps {
   setSettingsType: React.Dispatch<

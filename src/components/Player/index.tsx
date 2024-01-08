@@ -1,16 +1,27 @@
-import React, {
-  useRef,
-  useState,
-  useEffect
-} from "react";
-import { MUTED_KEY, VOLUME_KEY, formatVideoTime, playSpeedOptions, removeSearchParams } from "../../utils/contants";
+import React, { useRef, useState, useEffect } from "react";
+import {
+  MUTED_KEY,
+  VOLUME_KEY,
+  formatVideoTime,
+  playSpeedOptions,
+  removeSearchParams,
+} from "../../utils/contants";
 import { PlayerProps, Source } from "../../utils/types";
 import MainSettings from "./Settings/MainSettings";
 import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
 import QualitySettings from "./Settings/QualitySettings";
 import SubtitleSettings from "./Settings/SubtitleSettings";
 import CircularProgress from "../CircularProgress";
-import { IconFullscreen, IconFullscreenExit, IconBxPlay, IconPlayPause, IconVolumeMedium, IconVolumeMute, IconSettingsSharp, IconPictureInPictureFill } from '../Icons'
+import {
+  IconFullscreen,
+  IconFullscreenExit,
+  IconBxPlay,
+  IconPlayPause,
+  IconVolumeMedium,
+  IconVolumeMute,
+  IconSettingsSharp,
+  IconPictureInPictureFill,
+} from "../Icons";
 
 const Player: React.FC<PlayerProps> = ({
   color,
@@ -25,20 +36,20 @@ const Player: React.FC<PlayerProps> = ({
   ...props
 }) => {
   // @ts-ignore
-  const hlsRef = useRef<Hls | null>(null)
+  const hlsRef = useRef<Hls | null>(null);
 
   if (!src) {
-    if (hlsRef.current) hlsRef.current?.destroy()
-    throw new Error("Missing src props")
+    if (hlsRef.current) hlsRef.current?.destroy();
+    throw new Error("Missing src props");
   }
 
-  const source = src as string
+  const source = src as string;
 
   const seekRef = useRef<HTMLDivElement | null>(null);
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
-  const timeoutSeekRef = useRef<any>(null)
-  const volumeRef = useRef<HTMLDivElement | null>(null)
-  const myRef = useRef<HTMLVideoElement | null>(null)
+  const timeoutSeekRef = useRef<any>(null);
+  const volumeRef = useRef<HTMLDivElement | null>(null);
+  const myRef = useRef<HTMLVideoElement | null>(null);
 
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
@@ -47,29 +58,36 @@ const Player: React.FC<PlayerProps> = ({
   const [play, setPlay] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [fullScreen, setFullScreen] = useState(false);
-  const [muted, setMuted] = useState<boolean>(JSON.parse(localStorage.getItem(MUTED_KEY)!) || false);
+  const [muted, setMuted] = useState<boolean>(
+    JSON.parse(localStorage.getItem(MUTED_KEY)!) || false,
+  );
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsType, setSettingsType] = useState<
     "main" | "playspeed" | "quality" | "subtitle"
   >("main");
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
-  const [volume, setVolume] = useState(Number(localStorage.getItem(VOLUME_KEY)) || 100);
+  const [volume, setVolume] = useState(
+    Number(localStorage.getItem(VOLUME_KEY)) || 100,
+  );
   const [seeking, setSeeking] = useState(false);
-  const [previewTime, setPreviewTime] = useState<{ time: number | null; left: number | null }>({ time: null, left: null })
+  const [previewTime, setPreviewTime] = useState<{
+    time: number | null;
+    left: number | null;
+  }>({ time: null, left: null });
 
-  const defaultColor = color || "#ef4444"
-  const playerRef = passedRef || myRef
+  const defaultColor = color || "#ef4444";
+  const playerRef = passedRef || myRef;
 
   const handlePlayPause = () => {
-    setPlay(prev => !prev)
+    setPlay((prev) => !prev);
   };
 
   const handleFullScreen = () => {
     if (!videoContainerRef?.current) return;
 
     if (document.pictureInPictureElement) {
-      document.exitPictureInPicture()
+      document.exitPictureInPicture();
     }
 
     if (document.fullscreenElement) {
@@ -80,7 +98,7 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleTimeUpdate = () => {
-    if (seeking) return
+    if (seeking) return;
     setCurrentTime(playerRef?.current?.currentTime || 0);
   };
 
@@ -104,7 +122,7 @@ const Player: React.FC<PlayerProps> = ({
           playerRef.current.currentTime = 0;
         }
 
-        setSeeking(false)
+        setSeeking(false);
         return;
       }
 
@@ -113,7 +131,7 @@ const Player: React.FC<PlayerProps> = ({
           playerRef.current.currentTime = playerRef?.current?.duration;
         }
 
-        setSeeking(false)
+        setSeeking(false);
         return;
       }
 
@@ -130,8 +148,8 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleToggleMuted = () => {
-    setMuted(prev => !prev)
-    localStorage.setItem(MUTED_KEY, JSON.stringify(!muted))
+    setMuted((prev) => !prev);
+    localStorage.setItem(MUTED_KEY, JSON.stringify(!muted));
   };
 
   const handleChangePlaySpeed = (index: number, value: number) => {
@@ -145,21 +163,21 @@ const Player: React.FC<PlayerProps> = ({
 
   const handleChangeSource = (index: number) => {
     if (!playerRef?.current) return;
-    if (currentSource === index) return
+    if (currentSource === index) return;
 
     setCurrentSource(index);
 
     const existTrack = playerRef?.current?.querySelector("track");
-    if (existTrack) existTrack.remove()
+    if (existTrack) existTrack.remove();
 
     if (hlsRef?.current) {
       const hls = hlsRef?.current;
       hls.startLevel = index;
       hls.loadSource(sourceMulti?.[index]?.url);
-      hls.startLoad()
+      hls.startLoad();
     } else {
-      playerRef?.current?.setAttribute("src", sourceMulti?.[index]?.url)
-    };
+      playerRef?.current?.setAttribute("src", sourceMulti?.[index]?.url);
+    }
 
     const tmpCurrentTime = currentTime;
     setCurrentTime(tmpCurrentTime);
@@ -169,34 +187,42 @@ const Player: React.FC<PlayerProps> = ({
       playerRef.current.play();
     }
 
-    setShowSettings(false)
-    setSettingsType("main")
+    setShowSettings(false);
+    setSettingsType("main");
   };
 
   const handleLoadVideoMp4 = () => {
-    if (hlsRef?.current) hlsRef?.current?.destroy()
+    if (hlsRef?.current) hlsRef?.current?.destroy();
 
-    setSourceMulti(typeof source === "string" ? [{ label: "Default", url: source }] : source);
+    setSourceMulti(
+      typeof source === "string" ? [{ label: "Default", url: source }] : source,
+    );
 
     if (typeof source === "string") {
-      playerRef?.current?.setAttribute("src", source)
+      playerRef?.current?.setAttribute("src", source);
     } else {
       // @ts-ignore
-      setCurrentSource(source?.length - 1)
-      // @ts-ignore
-      playerRef?.current?.setAttribute("src", source?.[source?.length - 1]?.url)
+      setCurrentSource(source?.length - 1);
+      playerRef?.current?.setAttribute(
+        "src",
+        // @ts-ignore
+        source?.[source?.length - 1]?.url,
+      );
     }
-  }
+  };
 
   const handleLoadVideoM3u8 = () => {
-    if (!Hls) throw Error("To use video type m3u8 try install `npm i hls.js` and pass props Hls")
+    if (!Hls)
+      throw Error(
+        "To use video type m3u8 try install `npm i hls.js` and pass props Hls",
+      );
 
     if (!playerRef?.current) return;
     // @ts-ignore
     if (!Hls.isSupported()) throw Error("Not support hls");
 
     if (hlsRef?.current) {
-      hlsRef?.current?.destroy()
+      hlsRef?.current?.destroy();
     }
 
     // @ts-ignore
@@ -206,9 +232,9 @@ const Player: React.FC<PlayerProps> = ({
 
     // @ts-ignore
     hls.on(Hls.Events.MANIFEST_PARSED, function (_, data) {
-      if (typeof source !== 'string') {
+      if (typeof source !== "string") {
         // @ts-ignore
-        return setSourceMulti(source as Source[])
+        return setSourceMulti(source as Source[]);
       }
 
       if (
@@ -217,22 +243,27 @@ const Player: React.FC<PlayerProps> = ({
       )
         return;
 
-      // @ts-ignore
-      setSourceMulti(data?.levels?.map((item) => ({ label: `${item?.height}p`, url: item?.url?.[0] })));
-      setCurrentSource(data?.levels?.length - 1)
-      hls.startLevel = data?.levels?.length - 1
+      setSourceMulti(
+        // @ts-ignore
+        data?.levels?.map((item) => ({
+          label: `${item?.height}p`,
+          url: item?.url?.[0],
+        })),
+      );
+      setCurrentSource(data?.levels?.length - 1);
+      hls.startLevel = data?.levels?.length - 1;
     });
 
     hls.attachMedia(playerRef?.current);
 
-    if (typeof source === 'string') {
+    if (typeof source === "string") {
       hls.loadSource(source);
     } else {
       // @ts-ignore
-      hls.loadSource(source?.[currentSource]?.url)
+      hls.loadSource(source?.[currentSource]?.url);
     }
 
-    hls.startLoad()
+    hls.startLoad();
   };
 
   const handleChangeSubtitle = (index: number) => {
@@ -249,16 +280,18 @@ const Player: React.FC<PlayerProps> = ({
     }
   };
 
-  const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const left = volumeRef.current?.getBoundingClientRect()?.left as number
-    const width = volumeRef?.current?.getBoundingClientRect()?.width as number
+  const handleVolumeChange = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+  ) => {
+    const left = volumeRef.current?.getBoundingClientRect()?.left as number;
+    const width = volumeRef?.current?.getBoundingClientRect()?.width as number;
     const percent = (e?.clientX - left) / width;
 
-    if (e?.clientX <= left) return
-    if (e?.clientX >= width + left) return
+    if (e?.clientX <= left) return;
+    if (e?.clientX >= width + left) return;
 
-    setVolume(percent * 100)
-    localStorage.setItem(VOLUME_KEY, (percent * 100).toString())
+    setVolume(percent * 100);
+    localStorage.setItem(VOLUME_KEY, (percent * 100).toString());
   };
 
   const handleTurnOffSubtitle = () => {
@@ -382,13 +415,17 @@ const Player: React.FC<PlayerProps> = ({
   }, [currentSubtitle, currentSource]);
 
   useEffect(() => {
-    const type = typeof source === "string" ? removeSearchParams(source)?.split(".")[source?.split(".")?.length - 1]
-      :
-      // @ts-ignore
-      removeSearchParams(source?.[0]?.url)?.split(".")[source?.[0]?.url?.split(".")?.length - 1];
+    const type =
+      typeof source === "string"
+        ? removeSearchParams(source)?.split(".")[source?.split(".")?.length - 1]
+        : // @ts-ignore
+          removeSearchParams(source?.[0]?.url)?.split(".")[
+            // @ts-ignore
+            source?.[0]?.url?.split(".")?.length - 1
+          ];
 
     if (type === "mp4") {
-      handleLoadVideoMp4()
+      handleLoadVideoMp4();
     } else if (type === "m3u8") {
       handleLoadVideoM3u8();
     }
@@ -396,101 +433,103 @@ const Player: React.FC<PlayerProps> = ({
     if (autoPlay) {
       playerRef?.current?.addEventListener("loadedmetadata", () => {
         // @ts-ignore
-        playerRef?.current.play()
-      })
+        playerRef?.current.play();
+      });
     }
 
     return () => {
       if (hlsRef?.current) {
-        hlsRef?.current?.destroy()
+        hlsRef?.current?.destroy();
       }
-    }
-  }, [source, sourceMulti?.length, hlsRef?.current])
+    };
+  }, [source, sourceMulti?.length, hlsRef?.current]);
 
   useEffect(() => {
     if (playerRef !== null && playerRef?.current !== null) {
-      playerRef.current.muted = muted
+      playerRef.current.muted = muted;
     }
-  }, [muted])
+  }, [muted]);
 
   useEffect(() => {
-    if (!autoPlay) return
-    const initialMuted = localStorage.getItem(MUTED_KEY) ? JSON.parse(localStorage.getItem(MUTED_KEY)!) : (autoPlay ? true : false);
+    if (!autoPlay) return;
+    const initialMuted = localStorage.getItem(MUTED_KEY)
+      ? JSON.parse(localStorage.getItem(MUTED_KEY)!)
+      : autoPlay
+        ? true
+        : false;
 
     if (playerRef !== null && playerRef?.current !== null) {
-      playerRef.current.muted = initialMuted
-      setMuted(initialMuted)
+      playerRef.current.muted = initialMuted;
+      setMuted(initialMuted);
     }
-  }, [autoPlay])
+  }, [autoPlay]);
 
   useEffect(() => {
     const handlePreviewTime = (e: MouseEvent) => {
-      if (!playerRef?.current) return
+      if (!playerRef?.current) return;
 
-      const clientX = e?.clientX
+      const clientX = e?.clientX;
       const left = seekRef.current?.getBoundingClientRect().left as number;
       const width = seekRef.current?.getBoundingClientRect().width as number;
       const percent = (clientX - left) / width;
 
       if (clientX <= left) {
-        return
+        return;
       }
 
       if (clientX >= left + width) {
-        return
+        return;
       }
 
-      setPreviewTime(
-        {
-          time: percent * playerRef?.current.duration,
-          left: percent
-        }
-      )
-    }
+      setPreviewTime({
+        time: percent * playerRef?.current.duration,
+        left: percent,
+      });
+    };
 
-    seekRef?.current?.addEventListener("mousemove", handlePreviewTime)
+    seekRef?.current?.addEventListener("mousemove", handlePreviewTime);
 
     return () => {
-      seekRef?.current?.removeEventListener("mousemove", handlePreviewTime)
-    }
-  }, [])
+      seekRef?.current?.removeEventListener("mousemove", handlePreviewTime);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e?.code) {
         case "Space":
-          handlePlayPause()
-          break
+          handlePlayPause();
+          break;
 
         default:
-          break
+          break;
       }
-    }
+    };
 
-    document.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [play])
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [play]);
 
   useEffect(() => {
-    if (!play) setShowControl(true)
-    play ? playerRef?.current?.play() : playerRef?.current?.pause()
-  }, [play])
+    if (!play) setShowControl(true);
+    play ? playerRef?.current?.play() : playerRef?.current?.pause();
+  }, [play]);
 
   useEffect(() => {
     return () => {
-      if (hlsRef?.current) hlsRef?.current?.destroy()
-    }
-  }, [])
+      if (hlsRef?.current) hlsRef?.current?.destroy();
+    };
+  }, []);
 
   return (
     <div
       ref={videoContainerRef}
       onMouseMove={() => setShowControl(true)}
       onMouseLeave={() => {
-        if (seeking) return
+        if (seeking) return;
         setShowControl(false);
       }}
       onClick={() => setShowControl(true)}
@@ -498,7 +537,7 @@ const Player: React.FC<PlayerProps> = ({
     >
       <video
         ref={playerRef}
-        className={`video ${className || ''}`}
+        className={`video ${className || ""}`}
         poster={poster || ""}
         onPlay={() => setPlay(true)}
         onPause={() => setPlay(false)}
@@ -521,11 +560,18 @@ const Player: React.FC<PlayerProps> = ({
         style={{ display: showControl ? "flex" : "none" }}
         className="control-container opacity-animation"
       >
-
-        {!loading && <div onClick={handlePlayPause} className="center-item-absolute cursor-pointer">
-          {play ? <IconPlayPause fontSize={60} /> : <IconBxPlay fontSize={60} />}
-        </div>}
-
+        {!loading && (
+          <div
+            onClick={handlePlayPause}
+            className="center-item-absolute cursor-pointer"
+          >
+            {play ? (
+              <IconPlayPause fontSize={60} />
+            ) : (
+              <IconBxPlay fontSize={60} />
+            )}
+          </div>
+        )}
 
         {/* Menu select play speed, quanlity, subtitle */}
         {showSettings && (
@@ -577,28 +623,49 @@ const Player: React.FC<PlayerProps> = ({
         )}
         <div onClick={(e) => e.stopPropagation()} className="w-full">
           {/* Seek time */}
-          <div ref={seekRef} onClick={handleSeekTime} className="progress tooltip-container">
+          <div
+            ref={seekRef}
+            onClick={handleSeekTime}
+            className="progress tooltip-container"
+          >
             <div className="progress-gray">
               <div
                 style={{
                   width: live
                     ? "100%"
-                    : `${(currentTime * 100) /
-                    (playerRef?.current?.duration as number)
-                    }%`,
+                    : `${
+                        (currentTime * 100) /
+                        (playerRef?.current?.duration as number)
+                      }%`,
                   backgroundColor: defaultColor,
                 }}
                 className="progress-main"
               />
             </div>
 
-            {!live && <div className="progress-dot" style={{
-              backgroundColor: defaultColor, left: `calc(${(currentTime * 100) /
-                (playerRef?.current?.duration as number)
-                }% - 5px)`
-            }} />}
+            {!live && (
+              <div
+                className="progress-dot"
+                style={{
+                  backgroundColor: defaultColor,
+                  left: `calc(${
+                    (currentTime * 100) /
+                    (playerRef?.current?.duration as number)
+                  }% - 5px)`,
+                }}
+              />
+            )}
 
-            {!live && (previewTime?.time && previewTime?.left) ? <div style={{ left: `${previewTime?.left * 100}%` }} className="tooltip">{formatVideoTime(previewTime?.time)}</div> : ""}
+            {!live && previewTime?.time && previewTime?.left ? (
+              <div
+                style={{ left: `${previewTime?.left * 100}%` }}
+                className="tooltip"
+              >
+                {formatVideoTime(previewTime?.time)}
+              </div>
+            ) : (
+              ""
+            )}
           </div>
           {/* Main control */}
           <div
@@ -606,8 +673,15 @@ const Player: React.FC<PlayerProps> = ({
             className="main-control-container"
           >
             <div className="main-settings-content">
-              <div onClick={handlePlayPause} className="cursor-pointer mr-3 main-settings-content tooltip-container">
-                {play ? <IconPlayPause fontSize={28} /> : <IconBxPlay fontSize={28} />}
+              <div
+                onClick={handlePlayPause}
+                className="cursor-pointer mr-3 main-settings-content tooltip-container"
+              >
+                {play ? (
+                  <IconPlayPause fontSize={28} />
+                ) : (
+                  <IconBxPlay fontSize={28} />
+                )}
                 <div className="tooltip opacity-animation">Play</div>
               </div>
 
@@ -625,16 +699,26 @@ const Player: React.FC<PlayerProps> = ({
 
                     <div className="tooltip">Volume</div>
                   </div>
-                  <div ref={volumeRef} onMouseDown={handleVolumeChange} className="progress volume mr-3 opacity-animation width-animation">
+                  <div
+                    ref={volumeRef}
+                    onMouseDown={handleVolumeChange}
+                    className="progress volume mr-3 opacity-animation width-animation"
+                  >
                     <div className="progress-gray">
                       <div
-                        style={{ width: `${volume}%`, backgroundColor: defaultColor }}
+                        style={{
+                          width: `${volume}%`,
+                          backgroundColor: defaultColor,
+                        }}
                         className="progress-main"
                       />
 
-                      <div className="progress-dot" style={{
-                        backgroundColor: defaultColor, left: `calc(${volume}% - 5px)`
-                      }}
+                      <div
+                        className="progress-dot"
+                        style={{
+                          backgroundColor: defaultColor,
+                          left: `calc(${volume}% - 5px)`,
+                        }}
                       />
                     </div>
                   </div>
@@ -646,7 +730,9 @@ const Player: React.FC<PlayerProps> = ({
                     {formatVideoTime(playerRef?.current?.duration as number)}
                   </div>
                 ) : (
-                  <div className="text-sm font-semibold cursor-pointer live-button">Live</div>
+                  <div className="text-sm font-semibold cursor-pointer live-button">
+                    Live
+                  </div>
                 )}
               </div>
             </div>
