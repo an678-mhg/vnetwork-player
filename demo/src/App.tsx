@@ -10,10 +10,10 @@ const App = () => {
       <div className="flex justify-center h-[100dvh]">
         <div className="mt-5">
           <div className="p-2">
-            <h1 className="font-semibold lg:text-3xl text-2xl text-[#E12F1F] text-center">
+            <h1 className="font-bold lg:text-3xl text-2xl text-[#E12F1F] text-center">
               VNETWORK - Player
             </h1>
-            <p className="mt-5 text-sm text-center">
+            <p className="mt-5 text-center">
               A React component custom player support video m3u8, mp4
             </p>
           </div>
