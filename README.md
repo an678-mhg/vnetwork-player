@@ -12,8 +12,8 @@ A React component custom player support video m3u8, mp4
 
 ## Demo Player 
 
-<a href="https://react-anime-nine.vercel.app/anime/watch/spy-x-family/55736/m3u8" target="_blank">
-  https://react-anime-nine.vercel.app/anime/watch/spy-x-family/55736/m3u8
+<a href="https://vnetwork-player.vercel.app/" target="_blank">
+  https://vnetwork-player.vercel.app/
 </a>
 
 ## Installation
