@@ -46,8 +46,5 @@
     "player",
     "react-player",
     "vnetwork-player"
-  ],
-  "dependencies": {
-    "react-icons": "^5.0.1"
-  }
+  ]
 }
