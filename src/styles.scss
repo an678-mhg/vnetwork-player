@@ -76,6 +76,11 @@
     height: 3px;
     background-color: #9ca3af;
     position: relative;
+    transition: height 0.2s ease-in-out;
+  }
+
+  .progress-seek {
+    height: 4px;
   }
 
   .progress-main {
@@ -235,6 +240,12 @@
     color: #e74c3c;
   }
 
+  .scale-in-tr {
+    -webkit-animation: scale-in-tr 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      both;
+    animation: scale-in-tr 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
   @keyframes width {
     to {
       width: 100px;
@@ -277,6 +288,38 @@
     }
   }
 
+  @-webkit-keyframes scale-in-tr {
+    0% {
+      -webkit-transform: scale(0);
+      transform: scale(0);
+      -webkit-transform-origin: 100% 0%;
+      transform-origin: 100% 0%;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: scale(1);
+      transform: scale(1);
+      -webkit-transform-origin: 100% 0%;
+      transform-origin: 100% 0%;
+      opacity: 1;
+    }
+  }
+  @keyframes scale-in-tr {
+    0% {
+      -webkit-transform: scale(0);
+      transform: scale(0);
+      -webkit-transform-origin: 100% 0%;
+      transform-origin: 100% 0%;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: scale(1);
+      transform: scale(1);
+      -webkit-transform-origin: 100% 0%;
+      transform-origin: 100% 0%;
+      opacity: 1;
+    }
+  }
 
   @media only screen and (min-width: 768px) {
     .settings-container {

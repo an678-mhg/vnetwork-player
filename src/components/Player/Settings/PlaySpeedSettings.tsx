@@ -16,7 +16,7 @@ const PlaySpeedSettings: React.FC<PlaySpeedSettingsProps> = ({
   handleChangePlaySpeed,
 }) => {
   return (
-    <div className="opacity-animation">
+    <div className="opacity-animation settings-content scale-in-tr w-full">
       <div
         onClick={() => setSettingsType("main")}
         className="main-settings-content  p-2 cursor-pointer"

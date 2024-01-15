@@ -579,10 +579,7 @@ const Player: React.FC<PlayerProps> = ({
             onClick={() => setShowSettings(false)}
             className="settings-container"
           >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="settings-content"
-            >
+            <div className="w-full" onClick={(e) => e.stopPropagation()}>
               {settingsType === "main" ? (
                 <MainSettings
                   currentQuality={sourceMulti?.[currentSource]?.label}
