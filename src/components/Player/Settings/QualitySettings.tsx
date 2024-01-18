@@ -18,7 +18,7 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
   handleChangeSource,
 }) => {
   return (
-    <div className="overflow-y-auto opacity-animation settings-content scale-in-tr w-full">
+    <div className="overflow-y-auto opacity-animation settings-content scale-in-bl w-full">
       <div
         onClick={() => setSettingsType("main")}
         className="main-settings-content p-2 cursor-pointer"
