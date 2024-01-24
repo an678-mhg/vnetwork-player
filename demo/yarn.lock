@@ -1646,10 +1646,10 @@ util-deprecate@^1.0.2:
   optionalDependencies:
     fsevents "~2.3.3"
 
-vnetwork-player@^1.1.16:
-  version "1.1.16"
-  resolved "https://registry.npmjs.org/vnetwork-player/-/vnetwork-player-1.1.16.tgz"
-  integrity sha512-o67TLNys/2ls0NgYuE1xAMGCzf6fPLn3M3KQeBRpEXnIZ3GssU9vfGdGeUD8eGlYnHlxX0upqh/uHaq9tDCITQ==
+vnetwork-player@^1.1.20:
+  version "1.1.20"
+  resolved "https://registry.npmjs.org/vnetwork-player/-/vnetwork-player-1.1.20.tgz"
+  integrity sha512-yiEanYpD0p5diamM3EROWwKSvRiD65J5ioZZOXqaqN3u9uOP+XzOlBMVXCoA1/wut68WURUpfy+6jCVT3ao/EQ==
 
 which@^2.0.1:
   version "2.0.2"
