@@ -1,8 +1,6 @@
 import VPlayer from "vnetwork-player";
 import { FaGithub } from "react-icons/fa";
 import { RiNpmjsFill } from "react-icons/ri";
-import { lazy } from "react";
-const Component = lazy(() => import('./Component'))
 
 import "vnetwork-player/dist/vnetwork-player.min.css";
 
@@ -15,7 +13,6 @@ const App = () => {
             <h1 className="font-bold lg:text-3xl text-2xl text-[#E12F1F] text-center">
               VNETWORK - Player
             </h1>
-            <Component />
             <p className="mt-5 text-center">
               A React component custom player support video m3u8, mp4
             </p>
