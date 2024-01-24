@@ -428,6 +428,8 @@ const Player: React.FC<PlayerProps> = ({
       handleLoadVideoMp4();
     } else if (type === "m3u8") {
       handleLoadVideoM3u8();
+    } else {
+      handleLoadVideoMp4();
     }
 
     if (autoPlay) {
