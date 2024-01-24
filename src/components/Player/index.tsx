@@ -623,7 +623,7 @@ const Player: React.FC<PlayerProps> = ({
           <div
             ref={seekRef}
             onClick={handleSeekTime}
-            className="progress tooltip-container"
+            className="progress-vnet tooltip-container"
           >
             <div className="progress-gray">
               <div
