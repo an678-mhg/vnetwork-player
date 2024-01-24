@@ -699,7 +699,7 @@ const Player: React.FC<PlayerProps> = ({
                   <div
                     ref={volumeRef}
                     onMouseDown={handleVolumeChange}
-                    className="progress volume mr-3 opacity-animation width-animation"
+                    className="progress-vnet volume mr-3 opacity-animation width-animation"
                   >
                     <div className="progress-gray">
                       <div
