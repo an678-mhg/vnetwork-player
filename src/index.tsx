@@ -16,6 +16,6 @@ const VPlayer: React.FC<PlayerProps> = (props) => {
   );
 };
 
-export { type PlayerProps };
+export { PlayerProps };
 
 export default VPlayer;

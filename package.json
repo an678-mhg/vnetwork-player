@@ -7,9 +7,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm run format && rm -rf dist/ && tsc && npm run build:scss",
+    "build": "npm run format && rm -rf dist/ && tsdx build && npm run build:scss",
     "build:scss": "sass src/styles.scss dist/vnetwork-player.min.css --style=compressed --no-source-map",
-    "dev": "tsc --watch",
+    "dev": "tsdx watch",
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "author": "An Nguyen",
@@ -29,6 +29,7 @@
     "react-dom": "^18.2.0",
     "sass": "^1.69.5",
     "size-limit": "^11.0.0",
+    "tsdx": "^0.14.1",
     "typescript": "^5.3.2"
   },
   "size-limit": [

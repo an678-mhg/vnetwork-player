@@ -86,11 +86,15 @@ const Player: React.FC<PlayerProps> = ({
   const handleFullScreen = () => {
     if (!videoContainerRef?.current) return;
 
-    if (document.pictureInPictureElement) {
+    // @ts-ignore
+    if (document?.pictureInPictureElement) {
+      // @ts-ignore
       document.exitPictureInPicture();
     }
 
-    if (document.fullscreenElement) {
+    // @ts-ignore
+    if (document?.fullscreenElement) {
+      // @ts-ignore
       document.exitFullscreen();
     } else {
       videoContainerRef?.current?.requestFullscreen();
@@ -273,9 +277,12 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleVideoPicture = () => {
+    // @ts-ignore
     if (document.pictureInPictureElement) {
+      // @ts-ignore
       document.exitPictureInPicture();
     } else {
+      // @ts-ignore
       playerRef?.current?.requestPictureInPicture();
     }
   };
