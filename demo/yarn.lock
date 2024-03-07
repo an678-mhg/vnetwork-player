@@ -1651,7 +1651,6 @@ source-map-js@^1.0.2:
   integrity sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0:
-  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -1825,8 +1824,10 @@ vite@^5.0.8:
   optionalDependencies:
     fsevents "~2.3.3"
 
-vnetwork-player@../:
-  version "1.1.20"
+vnetwork-player@^1.1.21:
+  version "1.1.21"
+  resolved "https://registry.npmjs.org/vnetwork-player/-/vnetwork-player-1.1.21.tgz"
+  integrity sha512-t1SlgxrNtPq3xp69+l91HScpSsrFNY/PENt59AjhKjoy/ihCqEQ3g7Prco+drTcPtce4KjNbqoVae0mHLpkWvw==
 
 which@^2.0.1:
   version "2.0.2"
