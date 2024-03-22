@@ -41,6 +41,7 @@ const App = () => {
                   url: "/captions.vtt",
                 },
               ]}
+              autoPlay  
             />
           </div>
 
