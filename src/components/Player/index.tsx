@@ -152,6 +152,16 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleToggleMuted = () => {
+    if (!playerRef?.current) return;
+
+    const tmpVolume = volume;
+
+    if (muted) {
+      setVolume(0);
+    } else {
+      setVolume(tmpVolume);
+    }
+
     setMuted((prev) => !prev);
     localStorage.setItem(MUTED_KEY, JSON.stringify(!muted));
   };
@@ -188,7 +198,7 @@ const Player: React.FC<PlayerProps> = ({
 
     if (playerRef !== null && playerRef?.current !== null) {
       playerRef.current.currentTime = tmpCurrentTime;
-      playerRef.current.play();
+      !playerRef.current.paused && playerRef.current.play();
     }
 
     setShowSettings(false);
@@ -442,7 +452,7 @@ const Player: React.FC<PlayerProps> = ({
     if (autoPlay) {
       playerRef?.current?.addEventListener("loadedmetadata", () => {
         // @ts-ignore
-        playerRef?.current.play();
+        !playerRef?.current?.paused && playerRef?.current.play();
       });
     }
 
