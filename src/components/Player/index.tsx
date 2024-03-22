@@ -188,7 +188,7 @@ const Player: React.FC<PlayerProps> = ({
 
     if (playerRef !== null && playerRef?.current !== null) {
       playerRef.current.currentTime = tmpCurrentTime;
-      !playerRef.current.paused && playerRef.current.play();
+      playerRef.current.play();
     }
 
     setShowSettings(false);
@@ -442,7 +442,7 @@ const Player: React.FC<PlayerProps> = ({
     if (autoPlay) {
       playerRef?.current?.addEventListener("loadedmetadata", () => {
         // @ts-ignore
-        !playerRef?.current?.paused && playerRef?.current.play();
+       playerRef?.current.play();
       });
     }
 
