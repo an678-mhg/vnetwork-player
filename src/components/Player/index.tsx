@@ -152,15 +152,7 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleToggleMuted = () => {
-    if (!playerRef?.current) return;
-
-    const tmpVolume = volume;
-
-    if (muted) {
-      setVolume(0);
-    } else {
-      setVolume(tmpVolume);
-    }
+    
 
     setMuted((prev) => !prev);
     localStorage.setItem(MUTED_KEY, JSON.stringify(!muted));
