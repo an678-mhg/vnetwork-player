@@ -442,7 +442,7 @@ const Player: React.FC<PlayerProps> = ({
     if (autoPlay) {
       playerRef?.current?.addEventListener("loadedmetadata", () => {
         // @ts-ignore
-       playerRef?.current.play();
+        playerRef?.current.play();
       });
     }
 
