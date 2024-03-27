@@ -10,10 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "hls.js": "^1.5.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
-    "vnetwork-player": "^1.1.26"
+    "vnetwork-player": "^1.1.27"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
