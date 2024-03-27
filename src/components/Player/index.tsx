@@ -451,7 +451,7 @@ const Player: React.FC<PlayerProps> = ({
         hlsRef?.current?.destroy();
       }
     };
-  }, [source, sourceMulti?.length, hlsRef?.current]);
+  }, [JSON.stringify([source, sourceMulti?.length, hlsRef?.current])]);
 
   useEffect(() => {
     if (playerRef !== null && playerRef?.current !== null) {
