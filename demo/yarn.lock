@@ -1656,6 +1656,7 @@ source-map-js@^1.0.2:
   integrity sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -1829,10 +1830,10 @@ vite@^5.0.8:
   optionalDependencies:
     fsevents "~2.3.3"
 
-vnetwork-player@^1.1.28:
-  version "1.1.28"
-  resolved "https://registry.yarnpkg.com/vnetwork-player/-/vnetwork-player-1.1.28.tgz#5d3c0ab6765994248fe75141600a4ab9447fb394"
-  integrity sha512-lgRN4n5EWWb9E7z3QJ04mHd36OkrnSsm/qB3vJvVcPfMjClEkMlF4DSRxtb2Uqr9G8+FyewqZaT9aYm/65Ecxg==
+vnetwork-player@^1.1.29:
+  version "1.1.29"
+  resolved "https://registry.yarnpkg.com/vnetwork-player/-/vnetwork-player-1.1.29.tgz#6a5757511eb4d5d60afbe2aac1167db770476a68"
+  integrity sha512-wk1cfsi6vDYth2lx+kHnGAC29S2GsUav2CZMYvHS+36qILE1E3dYNAMcmMhtqfEyK/9PmCnIjZBHufVnNXOarQ==
 
 which@^2.0.1:
   version "2.0.2"
