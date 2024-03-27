@@ -336,7 +336,7 @@ const Player: React.FC<PlayerProps> = ({
   // handle seek time in pc with mouse event
   useEffect(() => {
     const handleMouseDown = () => {
-      setSeeking(true);
+      if(!live) setSeeking(true);
       document.addEventListener("mousemove", handleSeekTime);
     };
 
@@ -376,7 +376,7 @@ const Player: React.FC<PlayerProps> = ({
   // handle seek time in mobile with touch event
   useEffect(() => {
     const handleTouchStart = () => {
-      setSeeking(true);
+      if(!live) setSeeking(true);
       document.addEventListener("touchmove", handleSeekTime);
     };
 
