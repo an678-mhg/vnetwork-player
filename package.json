@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run format && rm -rf dist/ && tsdx build && npm run build:scss",
     "build:scss": "sass src/styles.scss dist/vnetwork-player.min.css --style=compressed --no-source-map",
-    "dev": "tsdx watch",
+    "dev": "tsc --watch",
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "author": "An Nguyen",

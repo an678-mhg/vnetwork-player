@@ -23,7 +23,7 @@ const Slider: React.FC<SliderProps> = ({
   live = false,
   onDragEnd,
   onPreview,
-  children
+  children,
 }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -47,7 +47,7 @@ const Slider: React.FC<SliderProps> = ({
     const left = rect?.left as number;
     const width = rect?.width as number;
     const percent = (clientX - left) / width;
-    onPreview && onPreview(newValue as number , percent);
+    onPreview && onPreview(newValue as number, percent);
   };
 
   const handleMove = (clientX: number) => {
