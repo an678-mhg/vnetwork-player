@@ -22,6 +22,7 @@ import {
   IconSettingsSharp,
   IconPictureInPictureFill,
 } from "../Icons";
+import Slider from "../Slider";
 
 const Player: React.FC<PlayerProps> = ({
   color,
@@ -44,11 +45,7 @@ const Player: React.FC<PlayerProps> = ({
   }
 
   const source = src as string;
-
-  const seekRef = useRef<HTMLDivElement | null>(null);
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
-  const timeoutSeekRef = useRef<any>(null);
-  const volumeRef = useRef<HTMLDivElement | null>(null);
   const myRef = useRef<HTMLVideoElement | null>(null);
 
   const [currentSource, setCurrentSource] = useState(0);
@@ -59,7 +56,7 @@ const Player: React.FC<PlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [fullScreen, setFullScreen] = useState(false);
   const [muted, setMuted] = useState<boolean>(
-    JSON.parse(localStorage.getItem(MUTED_KEY)!) || false,
+    JSON.parse(localStorage.getItem(MUTED_KEY)!) || false
   );
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -68,7 +65,7 @@ const Player: React.FC<PlayerProps> = ({
   >("main");
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
   const [volume, setVolume] = useState(
-    Number(localStorage.getItem(VOLUME_KEY)) || 100,
+    Number(localStorage.getItem(VOLUME_KEY)) || 100
   );
   const [seeking, setSeeking] = useState(false);
   const [previewTime, setPreviewTime] = useState<{
@@ -86,69 +83,61 @@ const Player: React.FC<PlayerProps> = ({
   const handleFullScreen = () => {
     if (!videoContainerRef?.current) return;
 
-    // @ts-ignore
-    if (document?.pictureInPictureElement) {
-      // @ts-ignore
-      document.exitPictureInPicture();
-    }
+    const element = videoContainerRef.current;
 
-    // @ts-ignore
-    if (document?.fullscreenElement) {
+    // Thoát khỏi chế độ PiP nếu đang bật
+    if (document.pictureInPictureElement) {
+      document.exitPictureInPicture().catch(console.error);
+    }
+    // Kiểm tra và xử lý chế độ toàn màn hình
+    if (
+      !document.fullscreenElement &&
       // @ts-ignore
-      document.exitFullscreen();
+      !document.mozFullScreenElement &&
+      // @ts-ignore
+      !document.webkitFullscreenElement &&
+      // @ts-ignore
+      !document.msFullscreenElement
+    ) {
+      // Bật chế độ toàn màn hình
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+        // @ts-ignore
+      } else if (element.mozRequestFullScreen) { // Firefox
+        // @ts-ignore
+        element.mozRequestFullScreen();
+        // @ts-ignore
+      } else if (element.webkitRequestFullscreen) { // Chrome, Safari và Opera
+        // @ts-ignore
+        element.webkitRequestFullscreen();
+        // @ts-ignore
+      } else if (element.msRequestFullscreen) { // Internet Explorer/Edge
+        // @ts-ignore
+        element.msRequestFullscreen();
+      }
     } else {
-      videoContainerRef?.current?.requestFullscreen();
+      // Thoát chế độ toàn màn hình
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        // @ts-ignore
+      } else if (document.mozCancelFullScreen) { // Firefox
+        // @ts-ignore
+        document.mozCancelFullScreen();
+        // @ts-ignore
+      } else if (document.webkitExitFullscreen) { // Chrome, Safari và Opera
+          // @ts-ignore
+        document.webkitExitFullscreen();
+        // @ts-ignore
+      } else if (document.msExitFullscreen) { // Internet Explorer/Edge
+        // @ts-ignore
+        document.msExitFullscreen();
+      }
     }
   };
 
   const handleTimeUpdate = () => {
     if (seeking) return;
     setCurrentTime(playerRef?.current?.currentTime || 0);
-  };
-
-  const handleSeekTime = (e: any) => {
-    if (live) return;
-
-    const clientX = e?.clientX || e?.touches?.[0]?.clientX || 0;
-    const left = seekRef.current?.getBoundingClientRect().left as number;
-    const width = seekRef.current?.getBoundingClientRect().width as number;
-    const percent = (clientX - left) / width;
-
-    document.body.style.userSelect = "none";
-
-    if (timeoutSeekRef?.current) {
-      clearTimeout(timeoutSeekRef?.current);
-    }
-
-    timeoutSeekRef.current = setTimeout(() => {
-      if (clientX <= left) {
-        if (playerRef !== null && playerRef?.current !== null) {
-          playerRef.current.currentTime = 0;
-        }
-
-        setSeeking(false);
-        return;
-      }
-
-      if (clientX >= width + left) {
-        if (playerRef !== null && playerRef?.current !== null) {
-          playerRef.current.currentTime = playerRef?.current?.duration;
-        }
-
-        setSeeking(false);
-        return;
-      }
-
-      if (playerRef !== null && playerRef?.current !== null) {
-        playerRef.current.currentTime = percent * playerRef.current?.duration;
-      }
-
-      setSeeking(false);
-    }, 500);
-
-    if (playerRef !== null && playerRef?.current !== null) {
-      setCurrentTime(percent * (playerRef?.current.duration as number));
-    }
   };
 
   const handleToggleMuted = () => {
@@ -199,7 +188,7 @@ const Player: React.FC<PlayerProps> = ({
     if (hlsRef?.current) hlsRef?.current?.destroy();
 
     setSourceMulti(
-      typeof source === "string" ? [{ label: "Default", url: source }] : source,
+      typeof source === "string" ? [{ label: "Default", url: source }] : source
     );
 
     if (typeof source === "string") {
@@ -210,7 +199,7 @@ const Player: React.FC<PlayerProps> = ({
       playerRef?.current?.setAttribute(
         "src",
         // @ts-ignore
-        source?.[source?.length - 1]?.url,
+        source?.[source?.length - 1]?.url
       );
     }
   };
@@ -218,7 +207,7 @@ const Player: React.FC<PlayerProps> = ({
   const handleLoadVideoM3u8 = () => {
     if (!Hls)
       throw Error(
-        "To use video type m3u8 try install `npm i hls.js` and pass props Hls",
+        "To use video type m3u8 try install `npm i hls.js` and pass props Hls"
       );
 
     if (!playerRef?.current) return;
@@ -252,7 +241,7 @@ const Player: React.FC<PlayerProps> = ({
         data?.levels?.map((item) => ({
           label: `${item?.height}p`,
           url: item?.url?.[0],
-        })),
+        }))
       );
       setCurrentSource(data?.levels?.length - 1);
       hls.startLevel = data?.levels?.length - 1;
@@ -277,28 +266,50 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleVideoPicture = () => {
-    // @ts-ignore
+    if (!playerRef.current) return;
+  
+    // Kiểm tra hỗ trợ PiP
+    const videoElement = playerRef.current;
+    if (!document.pictureInPictureEnabled && 
+        !('webkitSetPresentationMode' in videoElement) &&
+        !('mozRequestPictureInPicture' in videoElement)) {
+      console.warn('Picture-in-Picture không được hỗ trợ trong trình duyệt này.');
+      return;
+    }
+  
+    // Xử lý PiP cho các trình duyệt khác nhau
     if (document.pictureInPictureElement) {
-      // @ts-ignore
-      document.exitPictureInPicture();
-    } else {
-      // @ts-ignore
-      playerRef?.current?.requestPictureInPicture();
+      document.exitPictureInPicture().catch(console.error);
+    } else if (document.pictureInPictureEnabled) {
+      videoElement.requestPictureInPicture().catch(console.error);
+    } else if ('webkitSetPresentationMode' in videoElement) {
+      // Safari
+      const safariVideo = videoElement as HTMLVideoElement & {
+        webkitPresentationMode: string;
+        webkitSetPresentationMode: (mode: string) => void;
+      };
+      
+      if (safariVideo.webkitPresentationMode === 'picture-in-picture') {
+        safariVideo.webkitSetPresentationMode('inline');
+      } else {
+        safariVideo.webkitSetPresentationMode('picture-in-picture');
+      }
+    } else if ('mozRequestPictureInPicture' in videoElement) {
+      // Firefox
+      const firefoxVideo = videoElement as HTMLVideoElement & {
+        mozRequestPictureInPicture: () => Promise<void>;
+      };
+      
+      firefoxVideo.mozRequestPictureInPicture().catch(console.error);
     }
   };
 
-  const handleVolumeChange = (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-  ) => {
-    const left = volumeRef.current?.getBoundingClientRect()?.left as number;
-    const width = volumeRef?.current?.getBoundingClientRect()?.width as number;
-    const percent = (e?.clientX - left) / width;
-
-    if (e?.clientX <= left) return;
-    if (e?.clientX >= width + left) return;
-
-    setVolume(percent * 100);
-    localStorage.setItem(VOLUME_KEY, (percent * 100).toString());
+  const handleVolumeChange = (volume: number) => {
+    setVolume(volume);
+    localStorage.setItem(VOLUME_KEY, JSON.stringify(volume));
+    if (playerRef !== null && playerRef?.current !== null) {
+      playerRef.current.volume = volume / 100;
+    }
   };
 
   const handleTurnOffSubtitle = () => {
@@ -309,6 +320,14 @@ const Player: React.FC<PlayerProps> = ({
     }
     setShowSettings(false);
     setSettingsType("main");
+  };
+
+  const handleChangeTime = (time: number) => {
+    if (playerRef !== null && playerRef?.current !== null) {
+      setSeeking(true);
+      setCurrentTime(time);
+      playerRef.current.currentTime = time;
+    }
   };
 
   useEffect(() => {
@@ -326,40 +345,12 @@ const Player: React.FC<PlayerProps> = ({
 
     timeout = setTimeout(() => {
       setShowControl(false);
-    }, 6000);
+    }, 3000);
 
     return () => {
       timeout && clearTimeout(timeout);
     };
   }, [showControl, play, showSettings, seeking]);
-
-  // handle seek time in pc with mouse event
-  useEffect(() => {
-    const handleMouseDown = () => {
-      if (!live) setSeeking(true);
-      document.addEventListener("mousemove", handleSeekTime);
-    };
-
-    seekRef?.current?.addEventListener("mousedown", handleMouseDown);
-
-    return () => {
-      seekRef?.current?.removeEventListener("mousedown", handleMouseDown);
-    };
-  }, []);
-
-  // remove mouse move when mouse up
-  useEffect(() => {
-    const handleMouseUp = () => {
-      document.body.style.userSelect = "auto";
-      document.removeEventListener("mousemove", handleSeekTime);
-    };
-
-    document?.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      document?.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
 
   useEffect(() => {
     const handleFullScreenChange = () => {
@@ -370,33 +361,6 @@ const Player: React.FC<PlayerProps> = ({
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
-    };
-  }, []);
-
-  // handle seek time in mobile with touch event
-  useEffect(() => {
-    const handleTouchStart = () => {
-      if (!live) setSeeking(true);
-      document.addEventListener("touchmove", handleSeekTime);
-    };
-
-    seekRef?.current?.addEventListener("touchstart", handleTouchStart);
-
-    return () => {
-      seekRef?.current?.removeEventListener("touchstart", handleTouchStart);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleTouchEnd = () => {
-      document.body.style.userSelect = "auto";
-      document.removeEventListener("touchmove", handleSeekTime);
-    };
-
-    seekRef?.current?.addEventListener("touchend", handleTouchEnd);
-
-    return () => {
-      seekRef?.current?.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -461,66 +425,62 @@ const Player: React.FC<PlayerProps> = ({
 
   useEffect(() => {
     if (!autoPlay) return;
-    const initialMuted = localStorage.getItem(MUTED_KEY)
-      ? JSON.parse(localStorage.getItem(MUTED_KEY)!)
-      : autoPlay
-        ? true
-        : false;
-
     if (playerRef !== null && playerRef?.current !== null) {
-      playerRef.current.muted = initialMuted;
-      setMuted(initialMuted);
+      playerRef.current.muted = true;
+      setMuted(true);
     }
   }, [autoPlay]);
 
   useEffect(() => {
-    const handlePreviewTime = (e: MouseEvent) => {
-      if (!playerRef?.current) return;
-
-      const clientX = e?.clientX;
-      const left = seekRef.current?.getBoundingClientRect().left as number;
-      const width = seekRef.current?.getBoundingClientRect().width as number;
-      const percent = (clientX - left) / width;
-
-      if (clientX <= left) {
-        return;
-      }
-
-      if (clientX >= left + width) {
-        return;
-      }
-
-      setPreviewTime({
-        time: percent * playerRef?.current.duration,
-        left: percent,
-      });
-    };
-
-    seekRef?.current?.addEventListener("mousemove", handlePreviewTime);
-
-    return () => {
-      seekRef?.current?.removeEventListener("mousemove", handlePreviewTime);
-    };
-  }, []);
-
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e?.code) {
+      // Ngăn chặn các hành động mặc định của trình duyệt
+      if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'f', 'm'].includes(e.code)) {
+        e.preventDefault();
+      }
+  
+      switch (e.code) {
         case "Space":
           handlePlayPause();
           break;
-
+        case "ArrowLeft":
+          // Tua lùi 5 giây
+          if (playerRef.current) {
+            playerRef.current.currentTime -= 5;
+          }
+          break;
+        case "ArrowRight":
+          // Tua tới 5 giây
+          if (playerRef.current) {
+            playerRef.current.currentTime += 5;
+          }
+          break;
+        case "ArrowUp":
+          // Tăng âm lượng
+          handleVolumeChange(Math.min(volume + 5, 100));
+          break;
+        case "ArrowDown":
+          // Giảm âm lượng
+          handleVolumeChange(Math.max(volume - 5, 0));
+          break;
+        case "KeyF":
+          // Bật/tắt chế độ toàn màn hình
+          handleFullScreen();
+          break;
+        case "KeyM":
+          // Bật/tắt âm thanh
+          handleToggleMuted();
+          break;
         default:
           break;
       }
     };
-
+  
     document.addEventListener("keydown", handleKeyDown);
-
+  
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [play]);
+  }, [play, volume, handlePlayPause, handleVolumeChange, handleFullScreen, handleToggleMuted]);
 
   useEffect(() => {
     if (!play) setShowControl(true);
@@ -629,50 +589,30 @@ const Player: React.FC<PlayerProps> = ({
         )}
         <div onClick={(e) => e.stopPropagation()} className="w-full">
           {/* Seek time */}
-          <div
-            ref={seekRef}
-            onClick={handleSeekTime}
-            className="progress-vnet tooltip-container"
+
+          <Slider
+            onDragEnd={() => setSeeking(false)}
+            value={currentTime}
+            onChange={handleChangeTime}
+            min={0}
+            max={playerRef?.current?.duration as number}
+            live={live}
+            color={defaultColor}
+            onPreview={(value, percentValue) => {
+             
+              setPreviewTime({ time: value, left: percentValue });
+            }}
+            className="tooltip-container"
           >
-            <div className="progress-gray">
-              <div
-                style={{
-                  width: live
-                    ? "100%"
-                    : `${
-                        (currentTime * 100) /
-                        (playerRef?.current?.duration as number)
-                      }%`,
-                  backgroundColor: defaultColor,
-                }}
-                className="progress-main"
-              />
-            </div>
-
-            {!live && (
-              <div
-                className="progress-dot"
-                style={{
-                  backgroundColor: defaultColor,
-                  left: `calc(${
-                    (currentTime * 100) /
-                    (playerRef?.current?.duration as number)
-                  }% - 5px)`,
-                }}
-              />
-            )}
-
-            {!live && previewTime?.time && previewTime?.left ? (
+            {!live && previewTime?.time && previewTime?.left && (
               <div
                 style={{ left: `${previewTime?.left * 100}%` }}
                 className="tooltip"
               >
                 {formatVideoTime(previewTime?.time)}
               </div>
-            ) : (
-              ""
             )}
-          </div>
+          </Slider>
           {/* Main control */}
           <div
             onMouseDown={(e) => e.stopPropagation()}
@@ -705,29 +645,15 @@ const Player: React.FC<PlayerProps> = ({
 
                     <div className="tooltip">Volume</div>
                   </div>
-                  <div
-                    ref={volumeRef}
-                    onMouseDown={handleVolumeChange}
-                    className="progress-vnet volume mr-3 opacity-animation width-animation"
-                  >
-                    <div className="progress-gray">
-                      <div
-                        style={{
-                          width: `${volume}%`,
-                          backgroundColor: defaultColor,
-                        }}
-                        className="progress-main"
-                      />
-
-                      <div
-                        className="progress-dot"
-                        style={{
-                          backgroundColor: defaultColor,
-                          left: `calc(${volume}% - 5px)`,
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <Slider
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    min={0}
+                    max={100}
+                    live={false}
+                    color={defaultColor}
+                    className="volume mr-3 width-animation"
+                  />
                 </div>
                 {!live ? (
                   <div className="time">

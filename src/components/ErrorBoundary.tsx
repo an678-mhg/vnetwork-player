@@ -30,7 +30,7 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="video-container error-container">
           <img
             className="error-image"
-            src="https://toptop-app.vercel.app/error.png"
+            src="https://raw.githubusercontent.com/an678-mhg/tiktok-clone/main/public/error.png"
           />
           <h1 className="text-sm font-semibold error-message line-clamp-1">
             <span style={{ color: "#fff" }}>Error: </span> {this.state.message}

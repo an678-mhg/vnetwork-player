@@ -1,7 +1,7 @@
 #vnetwork-player {
   width: 100%;
   aspect-ratio: 16/9;
-  background-color: #111;
+  background-color: #222;
 
   * {
     padding: 0;
@@ -19,7 +19,7 @@
     height: 100%;
     position: relative;
     color: #fff;
-    background-color: #222;
+    background-color: #111;
   }
 
   .center-item-absolute {
@@ -126,7 +126,6 @@
   .volume {
     /* md:block hidden w-[100px] h-[4px] */
     width: 100px;
-    height: 4px;
     display: none;
   }
 
@@ -202,6 +201,10 @@
     display: none;
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  .show .tooltip {
+    display: block;
   }
 
   .loading {
@@ -337,6 +340,10 @@
     }
 
     .tooltip-container:hover .tooltip {
+      display: block;
+    }
+
+    .show .tooltip {
       display: block;
     }
 
