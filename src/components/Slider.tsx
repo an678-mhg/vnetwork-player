@@ -23,7 +23,7 @@ const Slider: React.FC<SliderProps> = ({
   live = false,
   onDragEnd,
   onPreview,
-  children,
+  children = <></>,
 }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -84,6 +84,7 @@ const Slider: React.FC<SliderProps> = ({
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("mouseup", handleMoveEnd);
       document.removeEventListener("touchend", handleMoveEnd);
+      onDragEnd && onDragEnd();
     };
   }, [isDragging]);
 

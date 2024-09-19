@@ -23,6 +23,7 @@ import {
   IconPictureInPictureFill,
 } from "../Icons";
 import Slider from "../Slider";
+import VideoPreviewImage from "../VideoPreviewImage";
 
 const Player: React.FC<PlayerProps> = ({
   color,
@@ -47,7 +48,9 @@ const Player: React.FC<PlayerProps> = ({
   const source = src as string;
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
   const myRef = useRef<HTMLVideoElement | null>(null);
+  const timeoutSeek = useRef<any>(null);
 
+  const [type, setType] = useState<"mp4" | "m3u8">("mp4");
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
   const [currentPlaySpeed, setCurrePlaySpeed] = useState(3);
@@ -335,9 +338,10 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleVolumeChange = (volume: number) => {
-    setVolume(volume);
-    localStorage.setItem(VOLUME_KEY, JSON.stringify(volume));
     if (playerRef !== null && playerRef?.current !== null) {
+      setSeeking(true);
+      setVolume(volume);
+      localStorage.setItem(VOLUME_KEY, JSON.stringify(volume));
       playerRef.current.volume = volume / 100;
     }
   };
@@ -356,8 +360,21 @@ const Player: React.FC<PlayerProps> = ({
     if (playerRef !== null && playerRef?.current !== null) {
       setSeeking(true);
       setCurrentTime(time);
-      playerRef.current.currentTime = time;
+
+      if (timeoutSeek.current) {
+        clearTimeout(timeoutSeek.current);
+      }
+
+      timeoutSeek.current = setTimeout(() => {
+        // @ts-ignore
+        playerRef.current.currentTime = time;
+      }, 100);
     }
+  };
+
+  const handleDragEnd = () => {
+    setPreviewTime({ time: null, left: null });
+    setSeeking(false);
   };
 
   useEffect(() => {
@@ -369,7 +386,7 @@ const Player: React.FC<PlayerProps> = ({
   useEffect(() => {
     let timeout: any;
 
-    if (!play || !showControl || showSettings || seeking) {
+    if (!play || !showControl || showSettings || seeking || previewTime?.left) {
       return;
     }
 
@@ -426,18 +443,14 @@ const Player: React.FC<PlayerProps> = ({
           ];
 
     if (type === "mp4") {
+      setType("mp4");
       handleLoadVideoMp4();
     } else if (type === "m3u8") {
+      setType("m3u8");
       handleLoadVideoM3u8();
     } else {
+      setType("mp4");
       handleLoadVideoMp4();
-    }
-
-    if (autoPlay) {
-      playerRef?.current?.addEventListener("loadedmetadata", () => {
-        // @ts-ignore
-        playerRef?.current.play();
-      });
     }
 
     return () => {
@@ -455,8 +468,15 @@ const Player: React.FC<PlayerProps> = ({
 
   useEffect(() => {
     if (!autoPlay) return;
+
     if (playerRef !== null && playerRef?.current !== null) {
       playerRef.current.muted = true;
+
+      playerRef.current.addEventListener("loadedmetadata", () => {
+        // @ts-ignore
+        playerRef.current.play();
+      });
+
       setMuted(true);
     }
   }, [autoPlay]);
@@ -572,7 +592,11 @@ const Player: React.FC<PlayerProps> = ({
       )}
 
       <div
-        onClick={() => setShowSettings(false)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowSettings(false);
+          setShowControl(false);
+        }}
         style={{ display: showControl ? "flex" : "none" }}
         className="control-container opacity-animation"
       >
@@ -592,7 +616,7 @@ const Player: React.FC<PlayerProps> = ({
         {/* Menu select play speed, quanlity, subtitle */}
         {showSettings && (
           <div
-            onClick={() => setShowSettings(false)}
+            onClick={(e) => setShowSettings(false)}
             className="settings-container"
           >
             <div className="w-full" onClick={(e) => e.stopPropagation()}>
@@ -636,9 +660,8 @@ const Player: React.FC<PlayerProps> = ({
         )}
         <div onClick={(e) => e.stopPropagation()} className="w-full">
           {/* Seek time */}
-
           <Slider
-            onDragEnd={() => setSeeking(false)}
+            onDragEnd={handleDragEnd}
             value={currentTime}
             onChange={handleChangeTime}
             min={0}
@@ -650,13 +673,25 @@ const Player: React.FC<PlayerProps> = ({
             }}
             className="tooltip-container"
           >
-            {!live && previewTime?.time && previewTime?.left && (
+            {!live && Number(previewTime?.time) && previewTime?.left ? (
               <div
-                style={{ left: `${previewTime?.left * 100}%` }}
+                style={{
+                  left: `${previewTime?.left * 100}%`,
+                  top: type === "mp4" ? -106 : -30,
+                }}
                 className="tooltip"
               >
-                {formatVideoTime(previewTime?.time)}
+                {type === "mp4" ? (
+                  <VideoPreviewImage
+                    currentTime={Number(previewTime?.time)}
+                    videoRef={playerRef}
+                  />
+                ) : (
+                  <p>{formatVideoTime(Number(previewTime?.time))}</p>
+                )}
               </div>
+            ) : (
+              ""
             )}
           </Slider>
           {/* Main control */}
@@ -692,6 +727,7 @@ const Player: React.FC<PlayerProps> = ({
                     <div className="tooltip">Volume</div>
                   </div>
                   <Slider
+                    onDragEnd={handleDragEnd}
                     value={volume}
                     onChange={handleVolumeChange}
                     min={0}

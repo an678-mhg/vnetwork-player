@@ -7,10 +7,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm run format && rm -rf dist/ && tsdx build && npm run build:scss",
+    "build": "npm run format && npm run clean && tsdx build && npm run build:scss",
     "build:scss": "sass src/styles.scss dist/vnetwork-player.min.css --style=compressed --no-source-map",
-    "dev": "tsc --watch",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\""
+    "dev": "npm run clean && tsc --watch",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "clean": "rm -rf dist/"
   },
   "author": "An Nguyen",
   "license": "MIT",
