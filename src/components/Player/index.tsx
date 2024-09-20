@@ -23,7 +23,6 @@ import {
   IconPictureInPictureFill,
 } from "../Icons";
 import Slider from "../Slider";
-import VideoPreviewImage from "../VideoPreviewImage";
 
 const Player: React.FC<PlayerProps> = ({
   color,
@@ -50,7 +49,6 @@ const Player: React.FC<PlayerProps> = ({
   const myRef = useRef<HTMLVideoElement | null>(null);
   const timeoutSeek = useRef<any>(null);
 
-  const [type, setType] = useState<"mp4" | "m3u8">("mp4");
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
   const [currentPlaySpeed, setCurrePlaySpeed] = useState(3);
@@ -442,13 +440,10 @@ const Player: React.FC<PlayerProps> = ({
           ];
 
     if (type === "mp4") {
-      setType("mp4");
       handleLoadVideoMp4();
     } else if (type === "m3u8") {
-      setType("m3u8");
       handleLoadVideoM3u8();
     } else {
-      setType("mp4");
       handleLoadVideoMp4();
     }
 
@@ -676,18 +671,11 @@ const Player: React.FC<PlayerProps> = ({
               <div
                 style={{
                   left: `${previewTime?.left * 100}%`,
-                  top: type === "mp4" ? -106 : -30,
+                  top: -30,
                 }}
                 className="tooltip"
               >
-                {type === "mp4" ? (
-                  <VideoPreviewImage
-                    currentTime={Number(previewTime?.time)}
-                    videoRef={playerRef}
-                  />
-                ) : (
-                  <p>{formatVideoTime(Number(previewTime?.time))}</p>
-                )}
+                <p>{formatVideoTime(Number(previewTime?.time))}</p>
               </div>
             ) : (
               ""

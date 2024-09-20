@@ -20,12 +20,12 @@ const App = () => {
           </div>
           <div className="lg:w-[700px] md:w-[600px] aspect-video mt-5">
             <VPlayer
-              Hls={Hls}
+          
               className="w-full h-full"
-              source="https://live-par-2-cdn-alt.livepush.io/live/bigbuckbunnyclip/index.m3u8"
+              source="https://www.w3schools.com/html/mov_bbb.mp4"
               color="#E12F1F"
               autoPlay
-              live
+           
             />
           </div>
 

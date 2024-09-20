@@ -98,7 +98,10 @@ const Slider: React.FC<SliderProps> = ({
       onMouseDown={(e) => handleStart(e.clientX)}
       onTouchStart={(e) => handleStart(e.touches[0].clientX)}
       onMouseMove={(e) => handlePreview(e.clientX)}
-      onMouseLeave={() => onPreview && onPreview(null, null)}
+      onMouseLeave={() => {
+        onPreview && onPreview(null, null);
+        onDragEnd && onDragEnd();
+      }}
     >
       <div className="progress-gray">
         <div
