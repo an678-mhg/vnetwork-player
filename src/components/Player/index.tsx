@@ -148,6 +148,7 @@ const Player: React.FC<PlayerProps> = ({
   };
 
   const handleTimeUpdate = () => {
+    if (seeking) return;
     setCurrentTime(playerRef?.current?.currentTime || 0);
   };
 
