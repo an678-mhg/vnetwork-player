@@ -479,6 +479,17 @@ const Player: React.FC<PlayerProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ngăn chặn các hành động mặc định của trình duyệt
+      const target = e.target as HTMLElement;
+
+      const isInputField =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+
+      if (isInputField) {
+        return;
+      }
+
       if (
         [
           "Space",
@@ -491,17 +502,6 @@ const Player: React.FC<PlayerProps> = ({
         ].includes(e.code)
       ) {
         e.preventDefault();
-      }
-
-      const target = e.target as HTMLElement;
-
-      const isInputField =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable;
-
-      if (isInputField) {
-        return;
       }
 
       switch (e.code) {
