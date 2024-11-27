@@ -57,7 +57,7 @@ const Player: React.FC<PlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [fullScreen, setFullScreen] = useState(false);
   const [muted, setMuted] = useState<boolean>(
-    JSON.parse(localStorage.getItem(MUTED_KEY)!) || false
+    JSON.parse(localStorage.getItem(MUTED_KEY)!) || false,
   );
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -66,7 +66,7 @@ const Player: React.FC<PlayerProps> = ({
   >("main");
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
   const [volume, setVolume] = useState(
-    Number(localStorage.getItem(VOLUME_KEY)) || 100
+    Number(localStorage.getItem(VOLUME_KEY)) || 100,
   );
   const [seeking, setSeeking] = useState(false);
   const [previewTime, setPreviewTime] = useState<{
@@ -200,7 +200,7 @@ const Player: React.FC<PlayerProps> = ({
     if (hlsRef?.current) hlsRef?.current?.destroy();
 
     setSourceMulti(
-      typeof source === "string" ? [{ label: "Default", url: source }] : source
+      typeof source === "string" ? [{ label: "Default", url: source }] : source,
     );
 
     if (typeof source === "string") {
@@ -211,7 +211,7 @@ const Player: React.FC<PlayerProps> = ({
       playerRef?.current?.setAttribute(
         "src",
         // @ts-ignore
-        source?.[source?.length - 1]?.url
+        source?.[source?.length - 1]?.url,
       );
     }
   };
@@ -219,7 +219,7 @@ const Player: React.FC<PlayerProps> = ({
   const handleLoadVideoM3u8 = () => {
     if (!Hls)
       throw Error(
-        "To use video type m3u8 try install `npm i hls.js` and pass props Hls"
+        "To use video type m3u8 try install `npm i hls.js` and pass props Hls",
       );
 
     if (!playerRef?.current) return;
@@ -253,7 +253,7 @@ const Player: React.FC<PlayerProps> = ({
         data?.levels?.map((item) => ({
           label: `${item?.height}p`,
           url: item?.url?.[0],
-        }))
+        })),
       );
       setCurrentSource(data?.levels?.length - 1);
       hls.startLevel = data?.levels?.length - 1;
@@ -289,7 +289,7 @@ const Player: React.FC<PlayerProps> = ({
       !("mozRequestPictureInPicture" in videoElement)
     ) {
       console.warn(
-        "Picture-in-Picture không được hỗ trợ trong trình duyệt này."
+        "Picture-in-Picture không được hỗ trợ trong trình duyệt này.",
       );
       return;
     }
