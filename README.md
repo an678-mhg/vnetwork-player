@@ -3,7 +3,6 @@
 [![Downloads](https://img.shields.io/npm/dt/vnetwork-player.svg?style=flat&color=success)](https://www.npmjs.com/package/vnetwork-player)
 [![Build Size](https://img.shields.io/bundlejs/size/vnetwork-player)](https://pkg-size.dev/vnetwork-player)
 [![Version](https://img.shields.io/npm/v/vnetwork-player?style=flat&color=success)](https://www.npmjs.com/package/vnetwork-player)
-
 <a href="https://pkg-size.dev/vnetwork-player"><img src="https://pkg-size.dev/badge/install/103906" title="Install size for vnetwork-player"></a>
 <a href="https://pkg-size.dev/vnetwork-player"><img src="https://pkg-size.dev/badge/bundle/24854" title="Bundle size for vnetwork-player"></a>
 
