@@ -133,11 +133,11 @@ function App() {
   const [live, setLive] = useState(false);
   const [subtitleEnabled, setSubtitleEnabled] = useState(false);
   const [skipIntroEnabled, setSkipIntroEnabled] = useState(true);
-  const [startIntro, setStartIntro] = useState(0);
-  const [endIntro, setEndIntro] = useState(8);
+  const [startIntro, setStartIntro] = useState(60);
+  const [endIntro, setEndIntro] = useState(120);
   const [skipOutroEnabled, setSkipOutroEnabled] = useState(true);
-  const [startOutro, setStartOutro] = useState(580);
-  const [endOutro, setEndOutro] = useState(634);
+  const [startOutro, setStartOutro] = useState(500);
+  const [endOutro, setEndOutro] = useState(552);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -445,7 +445,10 @@ function App() {
         </div>
       </div>
 
-      <section id="playground" className="playground-page border-t border-border/70 px-4 py-12 sm:px-5">
+      <section
+        id="playground"
+        className="playground-page border-t border-border/70 px-4 py-12 sm:px-5"
+      >
         <div className="mx-auto w-full max-w-6xl">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
