@@ -25,6 +25,9 @@ export default defineConfig({
     rspack: {
       resolve: {
         alias: {
+          '@tanstack/react-hotkeys': fileURLToPath(
+            new URL('./node_modules/@tanstack/react-hotkeys', import.meta.url),
+          ),
           react$: fileURLToPath(
             new URL('./node_modules/react/index.js', import.meta.url),
           ),
