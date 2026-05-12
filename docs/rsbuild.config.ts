@@ -10,6 +10,9 @@ export default defineConfig({
     title: 'VNetwork Player Docs',
     favicon: './public/favicon.svg',
   },
+  output: {
+    assetPrefix: './',
+  },
   source: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
