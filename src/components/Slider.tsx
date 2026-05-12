@@ -10,6 +10,12 @@ interface SliderProps {
   className?: string;
   color?: string;
   live?: boolean;
+  markers?: Array<{
+    start: number;
+    end: number;
+    label: string;
+    color?: string;
+  }>;
   children?: React.ReactNode;
 }
 
@@ -21,6 +27,7 @@ const Slider: React.FC<SliderProps> = ({
   className = "",
   color = "#ef4444",
   live = false,
+  markers = [],
   onDragEnd,
   onPreview,
   children = <></>,
@@ -88,7 +95,10 @@ const Slider: React.FC<SliderProps> = ({
     };
   }, [isDragging]);
 
-  const percentValue = ((value - min) / (max - min)) * 100;
+  const range = max - min;
+  const canRenderTimeline = Number.isFinite(range) && range > 0;
+  const percentValue = canRenderTimeline ? ((value - min) / range) * 100 : 0;
+  const markerItems = !live && canRenderTimeline ? markers : [];
 
   return (
     <div
@@ -104,6 +114,31 @@ const Slider: React.FC<SliderProps> = ({
       }}
     >
       <div className="progress-gray">
+        {markerItems.map((marker) => {
+          const start = Math.max(marker.start, min);
+          const end = Math.min(marker.end, max);
+
+          if (end <= start) return null;
+
+          const left = ((start - min) / range) * 100;
+          const width = ((end - start) / range) * 100;
+
+          return (
+            <div
+              key={`${marker.label}-${marker.start}-${marker.end}`}
+              className="progress-marker"
+              style={{
+                left: `${left}%`,
+                width: `${width}%`,
+                backgroundColor: marker.color || color,
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
+              <span className="progress-marker-tooltip">{marker.label}</span>
+            </div>
+          );
+        })}
         <div
           className="progress-main"
           style={{

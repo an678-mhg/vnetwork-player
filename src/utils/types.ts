@@ -15,8 +15,15 @@ export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
   className?: string;
   poster?: string;
   color?: string;
+  videoTitle?: string;
+  videoDescription?: string;
   subtitle?: Subtitle[] | undefined;
   playerRef?: React.MutableRefObject<HTMLVideoElement | null>;
   live?: boolean;
+  autoUnmuteDelay?: number;
+  startIntro?: number;
+  endIntro?: number;
+  startOutro?: number;
+  endOutro?: number;
   Hls?: any;
 }

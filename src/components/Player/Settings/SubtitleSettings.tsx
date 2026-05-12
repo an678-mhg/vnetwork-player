@@ -20,9 +20,15 @@ const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
   handleTurnOffSubtitle,
 }) => {
   return (
-    <div className="overflow-y-auto opacity-animation settings-content scale-in-bl w-full">
+    <div
+      className="overflow-y-auto opacity-animation settings-content scale-in-bl w-full"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div
-        onClick={() => setSettingsType("main")}
+        onClick={(e) => {
+          e.stopPropagation();
+          setSettingsType("main");
+        }}
         className="main-settings-content  p-2 cursor-pointer"
       >
         <IconChevronLeft fontSize={20} className="mr-3" />

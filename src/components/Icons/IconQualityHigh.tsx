@@ -1,17 +1,15 @@
-// icon:quality-high | Material Design Icons https://materialdesignicons.com/ | Austin Andrews
 import * as React from "react";
+import IconBase from "./IconBase";
 
 function IconQualityHigh(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      height="1em"
-      width="1em"
-      {...props}
-    >
-      <path d="M14.5 13.5h2v-3h-2M18 14a1 1 0 01-1 1h-.75v1.5h-1.5V15H14a1 1 0 01-1-1v-4a1 1 0 011-1h3a1 1 0 011 1m-7 5H9.5v-2h-2v2H6V9h1.5v2.5h2V9H11m8-5H5c-1.11 0-2 .89-2 2v12a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z" />
-    </svg>
+    <IconBase {...props}>
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M4.7 4.5h14.6c1 0 1.7.8 1.7 1.7v11.6c0 1-.8 1.7-1.7 1.7H4.7c-1 0-1.7-.8-1.7-1.7V6.2c0-1 .8-1.7 1.7-1.7m2.5 4.2c-.7 0-1.2.5-1.2 1.2v4.2c0 .7.5 1.2 1.2 1.2s1.2-.5 1.2-1.2V13h2.4v1.1c0 .7.5 1.2 1.2 1.2s1.2-.5 1.2-1.2V9.9c0-.7-.5-1.2-1.2-1.2s-1.2.5-1.2 1.2V11H8.4V9.9c0-.7-.5-1.2-1.2-1.2m8.9 0c-.7 0-1.2.5-1.2 1.2v4.2c0 .7.5 1.2 1.2 1.2h1c1.8 0 3-1.3 3-3.3s-1.2-3.3-3-3.3zm1.2 2.2c.3 0 .5.4.5 1.1s-.2 1.1-.5 1.1h-.1v-2.2z"
+      />
+    </IconBase>
   );
 }
 

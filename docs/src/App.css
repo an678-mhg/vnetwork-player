@@ -1,0 +1,226 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 44 40% 96%;
+    --foreground: 222 38% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 38% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 38% 8%;
+    --primary: 0 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 26% 90%;
+    --secondary-foreground: 222 38% 12%;
+    --muted: 204 22% 91%;
+    --muted-foreground: 218 13% 38%;
+    --accent: 0 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --border: 214 22% 82%;
+    --input: 214 22% 82%;
+    --ring: 0 100% 50%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 220 31% 7%;
+    --foreground: 190 24% 92%;
+    --card: 220 28% 10%;
+    --card-foreground: 190 24% 92%;
+    --popover: 220 28% 10%;
+    --popover-foreground: 190 24% 92%;
+    --primary: 0 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 24% 16%;
+    --secondary-foreground: 190 24% 92%;
+    --muted: 216 20% 15%;
+    --muted-foreground: 207 13% 66%;
+    --accent: 0 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --border: 216 18% 21%;
+    --input: 216 18% 21%;
+    --ring: 0 100% 50%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply m-0 bg-background font-sans text-foreground antialiased;
+    letter-spacing: 0;
+    overflow-x: hidden;
+  }
+
+  #root {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@layer components {
+  .hero-band {
+    background: linear-gradient(
+        90deg,
+        hsl(var(--background)) 0%,
+        hsl(var(--background) / 0.86) 42%,
+        transparent 100%
+      ),
+      radial-gradient(
+        circle at 78% 20%,
+        hsl(var(--primary) / 0.22),
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at 84% 76%,
+        hsl(var(--accent) / 0.2),
+        transparent 28%
+      );
+    border-bottom: 1px solid hsl(var(--border) / 0.72);
+  }
+
+  .signal-panel {
+    @apply relative flex min-h-[360px] w-full min-w-0 flex-col justify-between overflow-hidden rounded-lg border border-border bg-card p-6 shadow-sm;
+    background: linear-gradient(
+        145deg,
+        hsl(var(--card)),
+        hsl(var(--muted) / 0.45)
+      ),
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--border) / 0.34) 0,
+        hsl(var(--border) / 0.34) 1px,
+        transparent 1px,
+        transparent 44px
+      );
+  }
+
+  .signal-panel::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    top: 44px;
+    width: 190px;
+    height: 190px;
+    border: 1px solid hsl(var(--primary) / 0.42);
+    transform: rotate(18deg);
+  }
+
+  .signal-grid {
+    @apply grid grid-cols-2 gap-4;
+  }
+
+  .signal-grid span {
+    @apply block h-20 rounded-md border border-border bg-background/70;
+  }
+
+  .signal-grid span:nth-child(2) {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.9),
+      hsl(var(--accent) / 0.72)
+    );
+  }
+
+  .signal-grid span:nth-child(3) {
+    background: repeating-linear-gradient(
+      135deg,
+      hsl(var(--border) / 0.8) 0 1px,
+      transparent 1px 10px
+    );
+  }
+
+  .section-card,
+  .playground-card {
+    @apply min-w-0 rounded-lg border-border/80 bg-card shadow-sm;
+  }
+
+  .playground-card {
+    box-shadow: 0 24px 80px hsl(220 40% 2% / 0.18);
+  }
+
+  .player-shell {
+    @apply min-w-0 overflow-visible border-border rounded-sm bg-black;
+  }
+
+  .player-shell #vnetwork-player,
+  .player-shell .video-container {
+    width: 100%;
+    min-height: 245px;
+    border-radius: inherit;
+  }
+
+  .player-shell .video {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+  .player-shell .live-button {
+    border-color: var(--accent);
+  }
+
+  .code-block {
+    @apply max-h-[420px] max-w-full overflow-auto rounded-lg border border-border bg-[hsl(222_35%_7%)] p-4 font-mono text-xs leading-6 text-emerald-50 shadow-inner;
+    min-width: 0;
+  }
+
+  .code-block code {
+    display: inline-block;
+    min-width: max-content;
+    white-space: pre;
+    word-break: normal;
+  }
+
+  @media (max-width: 640px) {
+    .hero-band {
+      background: linear-gradient(
+          180deg,
+          hsl(var(--background)) 0%,
+          hsl(var(--background) / 0.92) 72%,
+          hsl(var(--background)) 100%
+        ),
+        radial-gradient(
+          circle at 90% 18%,
+          hsl(var(--primary) / 0.22),
+          transparent 34%
+        );
+    }
+
+    .signal-panel {
+      min-height: 300px;
+      padding: 1.25rem;
+    }
+
+    .signal-panel::after {
+      right: -92px;
+      top: 76px;
+      width: 170px;
+      height: 170px;
+    }
+
+    .signal-grid {
+      gap: 0.75rem;
+    }
+
+    .signal-grid span {
+      height: 4.5rem;
+    }
+  }
+}

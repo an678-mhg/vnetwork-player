@@ -26,7 +26,10 @@ const MainSettings: React.FC<MainSettingsProps> = ({
   haveSubtitle,
 }) => {
   return (
-    <div className="opacity-animation settings-content scale-in-bl w-full">
+    <div
+      className="opacity-animation settings-content scale-in-bl w-full"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div
         onClick={() => setSettingsType("playspeed")}
         className="main-settings cursor-pointer "

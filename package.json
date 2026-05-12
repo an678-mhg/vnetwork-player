@@ -48,5 +48,8 @@
     "player",
     "react-player",
     "vnetwork-player"
-  ]
+  ],
+  "dependencies": {
+    "@tanstack/react-hotkeys": "^0.10.0"
+  }
 }

@@ -1435,6 +1435,34 @@
     "@size-limit/file" "11.0.2"
     size-limit "11.0.2"
 
+"@tanstack/hotkeys@0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/hotkeys/-/hotkeys-0.8.0.tgz#68a0a4bce4be339594765da65a0eb7c2feb2c8d1"
+  integrity sha512-vqH7X9nb0MTJ/O08++dB5bP9jgj4+BIPOUu/U+6myG86lDsirZSVSobpq5UQpE7nBuk62i8eIYeOhd+OMl/UrA==
+  dependencies:
+    "@tanstack/store" "^0.11.0"
+
+"@tanstack/react-hotkeys@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-hotkeys/-/react-hotkeys-0.10.0.tgz#6e542914ed550649934f2b6fce56c4de635388b8"
+  integrity sha512-GwOSndI5j3qBVYTmgP1mYyRTnlxb2MS17cwGlsavSxMQPSnmDf+m3LzMIpRMs+3zzQMjg3cYhHsFYizYlFI2tw==
+  dependencies:
+    "@tanstack/hotkeys" "0.8.0"
+    "@tanstack/react-store" "^0.11.0"
+
+"@tanstack/react-store@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-store/-/react-store-0.11.0.tgz#a547563f65b50d0d2b37d5337cc708571af96486"
+  integrity sha512-tX4YXh3PDkmpvGQWkWqKpzs/MSqbtuwY9dWdWhtV9Q50PmO+jOkUKIWIX4G85dwt7lxdHLXsiaEKPdKmC8F41w==
+  dependencies:
+    "@tanstack/store" "0.11.0"
+    use-sync-external-store "^1.6.0"
+
+"@tanstack/store@0.11.0", "@tanstack/store@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/store/-/store-0.11.0.tgz#8a2e374a67bf9dbb28e72298156996445570102b"
+  integrity sha512-WlzzCt3xi0G6pCAJu1U+2jiECwabETDpQDi3hfkFZvJii9AuZqEKbOiVarX1/bWhTNjU486yQtJCCasi/0q+Cw==
+
 "@types/babel__core@^7.1.7":
   version "7.20.5"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.20.5.tgz#3df15f27ba85319caa07ba08d0721889bb39c017"
@@ -7115,6 +7143,11 @@ urix@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/urix/-/urix-0.1.0.tgz#da937f7a62e21fec1fd18d49b35c2935067a6c72"
   integrity sha512-Am1ousAhSLBeB9cG/7k7r2R0zj50uDRlZHPGbazid5s9rlF1F/QKYObEKSIunSjIOkJZqwRRLpvewjEkM7pSqg==
+
+use-sync-external-store@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.6.0.tgz#b174bfa65cb2b526732d9f2ac0a408027876f32d"
+  integrity sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==
 
 use@^3.1.0:
   version "3.1.1"

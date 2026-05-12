@@ -16,10 +16,16 @@ const PlaySpeedSettings: React.FC<PlaySpeedSettingsProps> = ({
   handleChangePlaySpeed,
 }) => {
   return (
-    <div className="opacity-animation settings-content scale-in-bl w-full">
+    <div
+      className="opacity-animation settings-content scale-in-bl w-full"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div
-        onClick={() => setSettingsType("main")}
-        className="main-settings-content  p-2 cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          setSettingsType("main");
+        }}
+        className="main-settings-content p-2 cursor-pointer"
       >
         <IconChevronLeft fontSize={20} className="mr-3" />
         <p className="text-sm font-semibold">Play speed</p>

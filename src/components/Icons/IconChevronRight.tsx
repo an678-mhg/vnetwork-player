@@ -1,20 +1,18 @@
-// icon:chevron-right | Bootstrap https://icons.getbootstrap.com/ | Bootstrap
 import * as React from "react";
+import IconBase from "./IconBase";
 
 function IconChevronRight(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      fill="currentColor"
-      viewBox="0 0 16 16"
-      height="1em"
-      width="1em"
-      {...props}
-    >
+    <IconBase {...props}>
       <path
-        fillRule="evenodd"
-        d="M4.646 1.646a.5.5 0 01.708 0l6 6a.5.5 0 010 .708l-6 6a.5.5 0 01-.708-.708L10.293 8 4.646 2.354a.5.5 0 010-.708z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={3}
+        d="m8.2 5.2 6.8 6.8-6.8 6.8"
       />
-    </svg>
+    </IconBase>
   );
 }
 

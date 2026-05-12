@@ -1,0 +1,758 @@
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+  type SVGProps,
+} from "react";
+import {
+  BadgeCheck,
+  BookOpen,
+  Braces,
+  CheckCircle2,
+  Copy,
+  Moon,
+  Settings2,
+  Sun,
+  TerminalSquare,
+  Zap,
+} from "lucide-react";
+import Hls from "hls.js";
+import VPlayer, { type PlayerProps } from "vnetwork-player-local";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+
+type SourceMode = "mp4" | "hls" | "multi" | "live";
+
+const SAMPLE_MP4 =
+  "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+const SAMPLE_HLS = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
+const SAMPLE_LIVE = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
+const SAMPLE_POSTER =
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop";
+
+const propsRows = [
+  ["source", "string | Source[]", "Required. MP4, M3U8, or quality list."],
+  ["Hls", "Hls constructor", "Required when source is an HLS / M3U8 URL."],
+  ["live", "boolean", "Disables seek UI and enables click-to-live behavior."],
+  ["poster", "string", "Poster image passed to the video element."],
+  ["color", "string", "Accent color for progress and control states."],
+  ["videoTitle", "string", "Title rendered in the player overlay."],
+  [
+    "videoDescription",
+    "string",
+    "Secondary metadata rendered under videoTitle in the player overlay.",
+  ],
+  ["subtitle", "Subtitle[]", "WebVTT tracks with { url, lang }."],
+  ["autoPlay", "boolean", "Starts muted autoplay when browser allows it."],
+  [
+    "autoUnmuteDelay",
+    "number",
+    "Best-effort delayed unmute after muted autoplay, in milliseconds.",
+  ],
+  [
+    "startIntro",
+    "number",
+    "Intro window start second. Used with endIntro to show Skip intro.",
+  ],
+  [
+    "endIntro",
+    "number",
+    "Intro window end second and target time when Skip intro is clicked.",
+  ],
+  [
+    "startOutro",
+    "number",
+    "Outro window start second. Used with endOutro to show Skip outro.",
+  ],
+  [
+    "endOutro",
+    "number",
+    "Outro window end second and target time when Skip outro is clicked.",
+  ],
+  ["playerRef", "MutableRefObject", "Access to the underlying video element."],
+  ["className", "string", "Class attached to the video element."],
+  ["...videoProps", "HTMLVideoElement props", "Any native video prop."],
+];
+
+const installSnippet = `npm i vnetwork-player hls.js
+import "vnetwork-player/dist/vnetwork-player.min.css";`;
+
+const usageSnippet = `import Hls from "hls.js";
+import VPlayer from "vnetwork-player";
+import "vnetwork-player/dist/vnetwork-player.min.css";
+
+export function Stream() {
+  return (
+    <VPlayer
+      source="https://example.com/master.m3u8"
+      Hls={Hls}
+      live
+      videoTitle="Live product launch"
+      videoDescription="Main stage stream"
+      color="#ff0000"
+      poster="/poster.jpg"
+    />
+  );
+}`;
+
+function App() {
+  const [darkMode, setDarkMode] = useState(true);
+  const [sourceMode, setSourceMode] = useState<SourceMode>("hls");
+  const [sourceUrl, setSourceUrl] = useState(SAMPLE_HLS);
+  const [poster, setPoster] = useState(SAMPLE_POSTER);
+  const [accent, setAccent] = useState("#ff0000");
+  const [videoTitle, setVideoTitle] = useState("VNetwork Player demo stream");
+  const [videoDescription, setVideoDescription] = useState(
+    "Interactive playback with custom controls, metadata, skip markers, and live sync.",
+  );
+  const [autoPlay, setAutoPlay] = useState(false);
+  const [autoUnmute, setAutoUnmute] = useState(false);
+  const [autoUnmuteDelay, setAutoUnmuteDelay] = useState(3000);
+  const [live, setLive] = useState(false);
+  const [subtitleEnabled, setSubtitleEnabled] = useState(false);
+  const [skipIntroEnabled, setSkipIntroEnabled] = useState(true);
+  const [startIntro, setStartIntro] = useState(0);
+  const [endIntro, setEndIntro] = useState(8);
+  const [skipOutroEnabled, setSkipOutroEnabled] = useState(true);
+  const [startOutro, setStartOutro] = useState(580);
+  const [endOutro, setEndOutro] = useState(634);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
+
+  useEffect(() => {
+    if (sourceMode === "mp4") {
+      setSourceUrl(SAMPLE_MP4);
+      setLive(false);
+    }
+    if (sourceMode === "hls") {
+      setSourceUrl(SAMPLE_HLS);
+      setLive(false);
+    }
+    if (sourceMode === "live") {
+      setSourceUrl(SAMPLE_LIVE);
+      setLive(true);
+    }
+  }, [sourceMode]);
+
+  const source = useMemo<PlayerProps["source"]>(() => {
+    if (sourceMode === "multi") {
+      return [
+        { label: "720p", url: SAMPLE_MP4 },
+        { label: "1080p", url: sourceUrl || SAMPLE_MP4 },
+      ];
+    }
+
+    return sourceUrl;
+  }, [sourceMode, sourceUrl]);
+
+  const playerProps = useMemo<PlayerProps>(
+    () => ({
+      source,
+      Hls,
+      live,
+      poster,
+      color: accent,
+      videoTitle,
+      videoDescription,
+      autoPlay,
+      autoUnmuteDelay: autoPlay && autoUnmute ? autoUnmuteDelay : undefined,
+      startIntro: skipIntroEnabled ? startIntro : undefined,
+      endIntro: skipIntroEnabled ? endIntro : undefined,
+      startOutro: skipOutroEnabled ? startOutro : undefined,
+      endOutro: skipOutroEnabled ? endOutro : undefined,
+      subtitle: subtitleEnabled
+        ? [
+            {
+              lang: "English",
+              url: "/captions.vtt",
+            },
+          ]
+        : undefined,
+    }),
+    [
+      accent,
+      autoPlay,
+      autoUnmute,
+      autoUnmuteDelay,
+      live,
+      poster,
+      videoDescription,
+      videoTitle,
+      endIntro,
+      endOutro,
+      skipIntroEnabled,
+      skipOutroEnabled,
+      source,
+      startIntro,
+      startOutro,
+      subtitleEnabled,
+    ],
+  );
+
+  const snippet = useMemo(() => {
+    const sourceValue =
+      typeof source === "string"
+        ? JSON.stringify(source)
+        : JSON.stringify(source, null, 2);
+    const videoTitleValue = JSON.stringify(videoTitle);
+    const videoDescriptionValue = JSON.stringify(videoDescription);
+
+    return `<VPlayer
+  source={${sourceValue}}
+  ${sourceMode === "hls" || sourceMode === "live" ? "Hls={Hls}" : ""}
+  ${live ? "live" : ""}
+  ${autoPlay ? "autoPlay" : ""}
+  ${autoPlay && autoUnmute ? `autoUnmuteDelay={${autoUnmuteDelay}}` : ""}
+  ${skipIntroEnabled ? `startIntro={${startIntro}}` : ""}
+  ${skipIntroEnabled ? `endIntro={${endIntro}}` : ""}
+  ${skipOutroEnabled ? `startOutro={${startOutro}}` : ""}
+  ${skipOutroEnabled ? `endOutro={${endOutro}}` : ""}
+  videoTitle={${videoTitleValue}}
+  videoDescription={${videoDescriptionValue}}
+  color="${accent}"
+  poster="${poster}"
+  ${
+    subtitleEnabled
+      ? 'subtitle={[{ lang: "English", url: "https://example.com/captions.vtt" }]}'
+      : ""
+  }
+/>`
+      .split("\n")
+      .filter((line) => line.trim())
+      .join("\n");
+  }, [
+    accent,
+    autoPlay,
+    autoUnmute,
+    autoUnmuteDelay,
+    live,
+    poster,
+    videoDescription,
+    videoTitle,
+    endIntro,
+    endOutro,
+    skipIntroEnabled,
+    skipOutroEnabled,
+    source,
+    sourceMode,
+    startIntro,
+    startOutro,
+    subtitleEnabled,
+  ]);
+
+  const copySnippet = () => {
+    navigator.clipboard?.writeText(snippet).catch(console.error);
+  };
+
+  return (
+    <main className="min-h-screen overflow-x-hidden bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/82 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-5">
+          <a href="#overview" className="flex min-w-0 items-center gap-3">
+            <PlayerLogo className="size-10 shrink-0 text-primary shadow-sm" />
+            <div className="min-w-0">
+              <p className="truncate font-display text-base font-bold leading-none">
+                VNetwork Player
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                React video runtime docs
+              </p>
+            </div>
+          </a>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {["Install", "Usage", "Props", "Playground"].map((item) => (
+              <Button key={item} asChild variant="ghost" size="sm">
+                <a href={`#${item.toLowerCase()}`}>{item}</a>
+              </Button>
+            ))}
+          </nav>
+
+          <Button
+            className="shrink-0"
+            variant="outline"
+            size="icon"
+            aria-label="Toggle dark mode"
+            onClick={() => setDarkMode((value) => !value)}
+          >
+            {darkMode ? <Sun /> : <Moon />}
+          </Button>
+        </div>
+      </header>
+
+      <section id="overview" className="hero-band">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-5 sm:py-14 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-20">
+          <div className="min-w-0 flex flex-col justify-center">
+            <div className="mb-5 flex flex-wrap gap-2">
+              <Badge variant="secondary">MP4</Badge>
+              <Badge variant="secondary">HLS / M3U8</Badge>
+              <Badge variant="secondary">Low latency live</Badge>
+              <Badge variant="secondary">PiP + fullscreen</Badge>
+            </div>
+            <h1 className="max-w-4xl break-words font-display text-[2.4rem] font-black leading-tight tracking-normal sm:text-5xl md:text-6xl">
+              Ship a focused video player with a docs surface that behaves like
+              an instrument panel.
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
+              Installation, usage, props, live-stream behavior, and a real
+              playground are wired together so every prop change updates the
+              preview and generated code.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild>
+                <a href="#playground">
+                  <Settings2 />
+                  Open Playground
+                </a>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="#install">
+                  <TerminalSquare />
+                  Install
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          <div className="signal-panel min-w-0">
+            <div className="signal-grid">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground mt-4">
+                Runtime profile
+              </p>
+              <p className="mt-2 break-words font-display text-3xl font-bold">
+                Custom controls, hotkeys, subtitles, quality switching, PiP,
+                fullscreen, and one-click live sync.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-5">
+        <div className="min-w-0 space-y-8">
+          <Card id="install" className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TerminalSquare className="size-5 text-primary" />
+                Installation
+              </CardTitle>
+              <CardDescription>
+                Install the player, optional HLS runtime, and import the bundled
+                stylesheet once in your app.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CodeBlock code={installSnippet} />
+            </CardContent>
+          </Card>
+
+          <Card id="usage" className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="size-5 text-primary" />
+                Usage
+              </CardTitle>
+              <CardDescription>
+                Pass `Hls` only when you play M3U8 streams. For live streams,
+                set `live` to disable seeking and enable the Live button sync.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CodeBlock code={usageSnippet} />
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {[
+                  ["Keyboard", "Space, arrows, F, M shortcuts are handled."],
+                  ["Live edge", "Click Live to jump back to server time."],
+                  ["Quality", "Use Source[] for manual MP4 quality menus."],
+                ].map(([title, body]) => (
+                  <div
+                    key={title}
+                    className="rounded-md border border-border p-4"
+                  >
+                    <CheckCircle2 className="mb-3 size-5 text-primary" />
+                    <p className="font-semibold">{title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card id="props" className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Braces className="size-5 text-primary" />
+                Props API
+              </CardTitle>
+              <CardDescription>
+                The component extends native video props and adds
+                player-specific controls for stream sources, live mode, theme
+                color, subtitles, and external refs.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="max-w-full overflow-x-auto rounded-md border border-border">
+                {propsRows.map(([name, type, description], index) => (
+                  <div
+                    key={name}
+                    className="grid min-w-[620px] gap-3 border-b border-border p-4 last:border-b-0 md:min-w-0 md:grid-cols-[160px_190px_1fr]"
+                  >
+                    <code className="font-mono text-sm text-primary">
+                      {name}
+                    </code>
+                    <code className="font-mono text-xs text-muted-foreground">
+                      {type}
+                    </code>
+                    <p className="text-sm text-muted-foreground">
+                      {description}
+                    </p>
+                    {index === 0 ? null : null}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <section id="playground" className="playground-page border-t border-border/70 px-4 py-12 sm:px-5">
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 font-display text-3xl font-bold">
+                <Zap className="size-6 text-primary" />
+                Playground
+              </h2>
+              <p className="mt-2 max-w-2xl text-muted-foreground">
+                Change props below the player and watch the preview plus JSX
+                update immediately.
+              </p>
+            </div>
+            <Badge className="w-fit" variant="outline">
+              {sourceMode.toUpperCase()}
+            </Badge>
+          </div>
+
+          <Card className="playground-card">
+            <CardContent className="space-y-6 p-4 sm:p-6">
+              <div
+                className="player-shell mx-auto w-full max-w-4xl"
+                style={{ "--accent": accent } as CSSProperties}
+              >
+                <VPlayer
+                  key={`${sourceMode}-${sourceUrl}-${live}`}
+                  {...playerProps}
+                />
+              </div>
+
+              <Tabs defaultValue="controls">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="controls">Props control</TabsTrigger>
+                  <TabsTrigger value="code">Code</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="controls" className="space-y-5 pt-4">
+                  <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+                    <Field label="Source mode">
+                      <Select
+                        value={sourceMode}
+                        onValueChange={(value) =>
+                          setSourceMode(value as SourceMode)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="mp4">MP4 file</SelectItem>
+                          <SelectItem value="hls">HLS / M3U8</SelectItem>
+                          <SelectItem value="live">Low latency live</SelectItem>
+                          <SelectItem value="multi">
+                            MP4 quality list
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Field label="Source URL">
+                      <Textarea
+                        value={sourceUrl}
+                        onChange={(event) => setSourceUrl(event.target.value)}
+                        spellCheck={false}
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Accent">
+                      <Input
+                        type="color"
+                        value={accent}
+                        onChange={(event) => setAccent(event.target.value)}
+                        className="h-10 p-1"
+                      />
+                    </Field>
+                    <Field label="Poster">
+                      <Input
+                        value={poster}
+                        onChange={(event) => setPoster(event.target.value)}
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="videoTitle">
+                      <Input
+                        value={videoTitle}
+                        onChange={(event) => setVideoTitle(event.target.value)}
+                      />
+                    </Field>
+                    <Field label="videoDescription">
+                      <Input
+                        value={videoDescription}
+                        onChange={(event) =>
+                          setVideoDescription(event.target.value)
+                        }
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <ToggleRow
+                      label="Live"
+                      checked={live}
+                      onCheckedChange={setLive}
+                    />
+                    <ToggleRow
+                      label="Autoplay"
+                      checked={autoPlay}
+                      onCheckedChange={setAutoPlay}
+                    />
+                    <ToggleRow
+                      label="Subtitle"
+                      checked={subtitleEnabled}
+                      onCheckedChange={setSubtitleEnabled}
+                    />
+                  </div>
+
+                  <div className="grid gap-3 rounded-md border border-border p-3 md:grid-cols-[1fr_160px]">
+                    <ToggleRow
+                      label="Auto unmute"
+                      checked={autoUnmute}
+                      onCheckedChange={setAutoUnmute}
+                    />
+                    <Field label="Delay ms">
+                      <Input
+                        type="number"
+                        min={0}
+                        step={500}
+                        value={autoUnmuteDelay}
+                        disabled={!autoUnmute}
+                        onChange={(event) =>
+                          setAutoUnmuteDelay(Number(event.target.value))
+                        }
+                      />
+                    </Field>
+                    <p className="text-xs leading-5 text-muted-foreground md:col-span-2">
+                      Best practice is muted autoplay plus an explicit unmute
+                      control. Delayed unmute is attempted only when enabled and
+                      may still be blocked by browser policy.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 rounded-md border border-border p-3 md:grid-cols-2">
+                    <div className="space-y-3">
+                      <ToggleRow
+                        label="Skip intro"
+                        checked={skipIntroEnabled}
+                        onCheckedChange={setSkipIntroEnabled}
+                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field label="startIntro">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={startIntro}
+                            disabled={!skipIntroEnabled}
+                            onChange={(event) =>
+                              setStartIntro(Number(event.target.value))
+                            }
+                          />
+                        </Field>
+                        <Field label="endIntro">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={endIntro}
+                            disabled={!skipIntroEnabled}
+                            onChange={(event) =>
+                              setEndIntro(Number(event.target.value))
+                            }
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <ToggleRow
+                        label="Skip outro"
+                        checked={skipOutroEnabled}
+                        onCheckedChange={setSkipOutroEnabled}
+                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field label="startOutro">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={startOutro}
+                            disabled={!skipOutroEnabled}
+                            onChange={(event) =>
+                              setStartOutro(Number(event.target.value))
+                            }
+                          />
+                        </Field>
+                        <Field label="endOutro">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={endOutro}
+                            disabled={!skipOutroEnabled}
+                            onChange={(event) =>
+                              setEndOutro(Number(event.target.value))
+                            }
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="code" className="pt-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      Generated JSX
+                    </p>
+                    <Button size="sm" variant="outline" onClick={copySnippet}>
+                      <Copy />
+                      Copy
+                    </Button>
+                  </div>
+                  <CodeBlock code={snippet} />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <footer className="border-t border-border px-5 py-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <span>
+            Built with Rsbuild, Rspack, React, Tailwind, and shadcn/ui.
+          </span>
+          <span className="flex items-center gap-2">
+            <BadgeCheck className="size-4 text-primary" />
+            Live props playground included
+          </span>
+        </div>
+      </footer>
+    </main>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function ToggleRow({
+  label,
+  checked,
+  onCheckedChange,
+  className,
+}: {
+  label: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 ${className}`}
+    >
+      <Label>{label}</Label>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+    </div>
+  );
+}
+
+function CodeBlock({ code }: { code: string }) {
+  return (
+    <pre className="code-block">
+      <code>{code}</code>
+    </pre>
+  );
+}
+
+function PlayerLogo(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" {...props}>
+      <rect width="48" height="48" rx="9" fill="currentColor" />
+      <path
+        d="M15.5 16.5c0-2.2 1.8-4 4-4h9c2.2 0 4 1.8 4 4v15c0 2.2-1.8 4-4 4h-9c-2.2 0-4-1.8-4-4z"
+        fill="hsl(var(--primary-foreground))"
+        opacity="0.18"
+      />
+      <path
+        d="M20.5 17.7c0-1.2 1.3-1.9 2.3-1.3l9.2 5.6c1 .6 1 2.1 0 2.7l-9.2 5.6c-1 .6-2.3-.1-2.3-1.3z"
+        fill="hsl(var(--primary-foreground))"
+      />
+      <path
+        d="M12 18v12M36 18v12"
+        stroke="hsl(var(--primary-foreground))"
+        strokeLinecap="round"
+        strokeWidth="3"
+        opacity="0.72"
+      />
+    </svg>
+  );
+}
+
+export default App;

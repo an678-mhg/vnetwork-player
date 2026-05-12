@@ -1,3 +1,4 @@
+import { useHotkeys } from "@tanstack/react-hotkeys";
 import React, { useRef, useState, useEffect } from "react";
 import {
   MUTED_KEY,
@@ -6,6 +7,22 @@ import {
   playSpeedOptions,
   removeSearchParams,
 } from "../../utils/contants";
+import {
+  addFullscreenChangeListener,
+  getFullscreenElement,
+  toggleFullscreen,
+  togglePictureInPicture,
+} from "../../utils/fullscreen";
+import {
+  getLivePosition,
+  HlsConstructorLike,
+  HlsInstance,
+  isSkipSegmentActive,
+  LIVE_EDGE_CLICKABLE_THRESHOLD_SECONDS,
+  NormalizedSkipSegment,
+  normalizeSkipIntro,
+  normalizeSkipOutro,
+} from "../../utils/player";
 import { PlayerProps, Source } from "../../utils/types";
 import MainSettings from "./Settings/MainSettings";
 import PlaySpeedSettings from "./Settings/PlaySpeedSettings";
@@ -30,21 +47,27 @@ const Player: React.FC<PlayerProps> = ({
   playerRef: passedRef,
   className,
   poster,
+  videoTitle,
+  videoDescription,
   source: src,
   live,
   autoPlay,
+  autoUnmuteDelay,
+  startIntro,
+  endIntro,
+  startOutro,
+  endOutro,
   Hls,
   ...props
 }) => {
-  // @ts-ignore
-  const hlsRef = useRef<Hls | null>(null);
+  const hlsRef = useRef<HlsInstance | null>(null);
 
   if (!src) {
     if (hlsRef.current) hlsRef.current?.destroy();
     throw new Error("Missing src props");
   }
 
-  const source = src as string;
+  const source = src;
   const videoContainerRef = useRef<HTMLDivElement | null>(null);
   const myRef = useRef<HTMLVideoElement | null>(null);
   const timeoutSeek = useRef<any>(null);
@@ -73,83 +96,63 @@ const Player: React.FC<PlayerProps> = ({
     time: number | null;
     left: number | null;
   }>({ time: null, left: null });
+  const [liveEdgeDelay, setLiveEdgeDelay] = useState(0);
 
   const defaultColor = color || "#ef4444";
   const playerRef = passedRef || myRef;
+  const hasVideoMetadata = Boolean(videoTitle || videoDescription);
+  const canSyncLive =
+    live && liveEdgeDelay > LIVE_EDGE_CLICKABLE_THRESHOLD_SECONDS;
+  const introSegment = normalizeSkipIntro(startIntro, endIntro);
+  const outroSegment = normalizeSkipOutro(startOutro, endOutro);
+  const activeSkipSegment = isSkipSegmentActive(introSegment, currentTime)
+    ? introSegment
+    : isSkipSegmentActive(outroSegment, currentTime)
+      ? outroSegment
+      : null;
+  const videoDuration = playerRef.current?.duration;
+  const canShowSkipMarkers =
+    !live &&
+    typeof videoDuration === "number" &&
+    Number.isFinite(videoDuration);
+  const skipMarkers = canShowSkipMarkers
+    ? [introSegment, outroSegment]
+        .filter((segment): segment is NormalizedSkipSegment => Boolean(segment))
+        .map((segment) => ({
+          ...segment,
+          color: segment.label === "Skip intro" ? "#f59e0b" : "#8b5cf6",
+        }))
+    : [];
+
+  const updateLiveEdgeDelay = () => {
+    if (!live || !playerRef.current) {
+      setLiveEdgeDelay(0);
+      return;
+    }
+
+    const livePosition = getLivePosition(playerRef.current, hlsRef.current);
+    if (livePosition === null) {
+      setLiveEdgeDelay(0);
+      return;
+    }
+
+    setLiveEdgeDelay(Math.max(0, livePosition - playerRef.current.currentTime));
+  };
 
   const handlePlayPause = () => {
     setPlay((prev) => !prev);
   };
 
   const handleFullScreen = () => {
-    if (!videoContainerRef?.current) return;
+    if (!videoContainerRef.current) return;
 
-    const element = videoContainerRef.current;
-
-    // Thoát khỏi chế độ PiP nếu đang bật
-    if (
-      (document as Document & { pictureInPictureElement: any })
-        ?.pictureInPictureElement
-    ) {
-      (document as Document & { exitPictureInPicture: () => Promise<void> })
-        ?.exitPictureInPicture()
-        .catch(console.error);
-    }
-    // Kiểm tra và xử lý chế độ toàn màn hình
-    if (
-      !document.fullscreenElement &&
-      // @ts-ignore
-      !document.mozFullScreenElement &&
-      // @ts-ignore
-      !document.webkitFullscreenElement &&
-      // @ts-ignore
-      !document.msFullscreenElement
-    ) {
-      // Bật chế độ toàn màn hình
-      if (element.requestFullscreen) {
-        element.requestFullscreen();
-        // @ts-ignore
-      } else if (element.mozRequestFullScreen) {
-        // Firefox
-        // @ts-ignore
-        element.mozRequestFullScreen();
-        // @ts-ignore
-      } else if (element.webkitRequestFullscreen) {
-        // Chrome, Safari và Opera
-        // @ts-ignore
-        element.webkitRequestFullscreen();
-        // @ts-ignore
-      } else if (element.msRequestFullscreen) {
-        // Internet Explorer/Edge
-        // @ts-ignore
-        element.msRequestFullscreen();
-      }
-    } else {
-      // Thoát chế độ toàn màn hình
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-        // @ts-ignore
-      } else if (document.mozCancelFullScreen) {
-        // Firefox
-        // @ts-ignore
-        document.mozCancelFullScreen();
-        // @ts-ignore
-      } else if (document.webkitExitFullscreen) {
-        // Chrome, Safari và Opera
-        // @ts-ignore
-        document.webkitExitFullscreen();
-        // @ts-ignore
-      } else if (document.msExitFullscreen) {
-        // Internet Explorer/Edge
-        // @ts-ignore
-        document.msExitFullscreen();
-      }
-    }
+    toggleFullscreen(videoContainerRef.current);
   };
 
   const handleTimeUpdate = () => {
     if (seeking) return;
     setCurrentTime(playerRef?.current?.currentTime || 0);
+    updateLiveEdgeDelay();
   };
 
   const handleToggleMuted = () => {
@@ -206,11 +209,9 @@ const Player: React.FC<PlayerProps> = ({
     if (typeof source === "string") {
       playerRef?.current?.setAttribute("src", source);
     } else {
-      // @ts-ignore
       setCurrentSource(source?.length - 1);
       playerRef?.current?.setAttribute(
         "src",
-        // @ts-ignore
         source?.[source?.length - 1]?.url,
       );
     }
@@ -223,23 +224,21 @@ const Player: React.FC<PlayerProps> = ({
       );
 
     if (!playerRef?.current) return;
-    // @ts-ignore
-    if (!Hls.isSupported()) throw Error("Not support hls");
+    const HlsConstructor = Hls as HlsConstructorLike;
+
+    if (!HlsConstructor.isSupported()) throw Error("Not support hls");
 
     if (hlsRef?.current) {
       hlsRef?.current?.destroy();
     }
 
-    // @ts-ignore
-    hlsRef.current = new Hls();
+    hlsRef.current = new HlsConstructor();
 
     const hls = hlsRef?.current;
 
-    // @ts-ignore
-    hls.on(Hls.Events.MANIFEST_PARSED, function (_, data) {
+    hls.on(HlsConstructor.Events.MANIFEST_PARSED, function (_, data) {
       if (typeof source !== "string") {
-        // @ts-ignore
-        return setSourceMulti(source as Source[]);
+        return setSourceMulti(source);
       }
 
       if (
@@ -248,15 +247,16 @@ const Player: React.FC<PlayerProps> = ({
       )
         return;
 
+      const levels = data?.levels || [];
+
       setSourceMulti(
-        // @ts-ignore
-        data?.levels?.map((item) => ({
+        levels?.map((item) => ({
           label: `${item?.height}p`,
-          url: item?.url?.[0],
+          url: Array.isArray(item?.url) ? item?.url?.[0] : item?.url || "",
         })),
       );
-      setCurrentSource(data?.levels?.length - 1);
-      hls.startLevel = data?.levels?.length - 1;
+      setCurrentSource(levels?.length - 1);
+      hls.startLevel = levels?.length - 1;
     });
 
     hls.attachMedia(playerRef?.current);
@@ -264,7 +264,6 @@ const Player: React.FC<PlayerProps> = ({
     if (typeof source === "string") {
       hls.loadSource(source);
     } else {
-      // @ts-ignore
       hls.loadSource(source?.[currentSource]?.url);
     }
 
@@ -280,59 +279,37 @@ const Player: React.FC<PlayerProps> = ({
   const handleVideoPicture = () => {
     if (!playerRef.current) return;
 
-    // Kiểm tra hỗ trợ PiP
+    togglePictureInPicture(playerRef.current);
+  };
+
+  const handleGoLive = () => {
+    if (!canSyncLive || !playerRef.current) return;
+
     const videoElement = playerRef.current;
-    if (
-      !(document as Document & { pictureInPictureEnabled: any })
-        .pictureInPictureEnabled &&
-      !("webkitSetPresentationMode" in videoElement) &&
-      !("mozRequestPictureInPicture" in videoElement)
-    ) {
-      console.warn(
-        "Picture-in-Picture không được hỗ trợ trong trình duyệt này.",
-      );
+    const livePosition = getLivePosition(videoElement, hlsRef.current);
+
+    hlsRef.current?.startLoad();
+
+    if (livePosition === null) {
+      videoElement.play().catch(console.error);
+      setPlay(true);
       return;
     }
 
-    // Xử lý PiP cho các trình duyệt khác nhau
-    if (
-      (document as Document & { pictureInPictureElement: any })
-        .pictureInPictureElement
-    ) {
-      (document as Document & { exitPictureInPicture: () => Promise<void> })
-        .exitPictureInPicture()
-        .catch(console.error);
-    } else if (
-      (document as Document & { pictureInPictureEnabled: any })
-        .pictureInPictureEnabled
-    ) {
-      (
-        videoElement as HTMLVideoElement & {
-          requestPictureInPicture: () => Promise<void>;
-        }
-      )
-        .requestPictureInPicture()
-        .catch(console.error);
-    } else if ("webkitSetPresentationMode" in videoElement) {
-      // Safari
-      const safariVideo = videoElement as HTMLVideoElement & {
-        webkitPresentationMode: string;
-        webkitSetPresentationMode: (mode: string) => void;
-      };
+    videoElement.currentTime = livePosition;
+    setCurrentTime(livePosition);
+    setLiveEdgeDelay(0);
+    setSeeking(false);
+    setPlay(true);
+    videoElement.play().catch(console.error);
+  };
 
-      if (safariVideo.webkitPresentationMode === "picture-in-picture") {
-        safariVideo.webkitSetPresentationMode("inline");
-      } else {
-        safariVideo.webkitSetPresentationMode("picture-in-picture");
-      }
-    } else if ("mozRequestPictureInPicture" in videoElement) {
-      // Firefox
-      const firefoxVideo = videoElement as HTMLVideoElement & {
-        mozRequestPictureInPicture: () => Promise<void>;
-      };
+  const handleSkipSegment = () => {
+    if (!activeSkipSegment || !playerRef.current) return;
 
-      firefoxVideo.mozRequestPictureInPicture().catch(console.error);
-    }
+    playerRef.current.currentTime = activeSkipSegment.end;
+    setCurrentTime(activeSkipSegment.end);
+    setSeeking(false);
   };
 
   const handleVolumeChange = (volume: number) => {
@@ -364,8 +341,9 @@ const Player: React.FC<PlayerProps> = ({
       }
 
       timeoutSeek.current = setTimeout(() => {
-        // @ts-ignore
-        playerRef.current.currentTime = time;
+        if (playerRef.current) {
+          playerRef.current.currentTime = time;
+        }
       }, 100);
     }
   };
@@ -380,6 +358,28 @@ const Player: React.FC<PlayerProps> = ({
       playerRef.current.volume = (volume <= 0 ? 0 : volume) / 100;
     }
   }, [volume]);
+
+  useEffect(() => {
+    if (!live || !playerRef.current) {
+      setLiveEdgeDelay(0);
+      return;
+    }
+
+    const videoElement = playerRef.current;
+    const handleLiveProgress = () => updateLiveEdgeDelay();
+
+    videoElement.addEventListener("progress", handleLiveProgress);
+    videoElement.addEventListener("loadedmetadata", handleLiveProgress);
+
+    const interval = window.setInterval(handleLiveProgress, 1000);
+    handleLiveProgress();
+
+    return () => {
+      videoElement.removeEventListener("progress", handleLiveProgress);
+      videoElement.removeEventListener("loadedmetadata", handleLiveProgress);
+      window.clearInterval(interval);
+    };
+  }, [live, source, currentSource]);
 
   useEffect(() => {
     let timeout: any;
@@ -399,14 +399,10 @@ const Player: React.FC<PlayerProps> = ({
 
   useEffect(() => {
     const handleFullScreenChange = () => {
-      setFullScreen((prev) => !prev);
+      setFullScreen(Boolean(getFullscreenElement()));
     };
 
-    document.addEventListener("fullscreenchange", handleFullScreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullScreenChange);
-    };
+    return addFullscreenChangeListener(handleFullScreenChange);
   }, []);
 
   useEffect(() => {
@@ -434,9 +430,7 @@ const Player: React.FC<PlayerProps> = ({
     const type =
       typeof source === "string"
         ? removeSearchParams(source)?.split(".")[source?.split(".")?.length - 1]
-        : // @ts-ignore
-          removeSearchParams(source?.[0]?.url)?.split(".")[
-            // @ts-ignore
+        : removeSearchParams(source?.[0]?.url)?.split(".")[
             source?.[0]?.url?.split(".")?.length - 1
           ];
 
@@ -463,97 +457,89 @@ const Player: React.FC<PlayerProps> = ({
 
   useEffect(() => {
     if (!autoPlay) return;
+    if (!playerRef.current) return;
 
-    if (playerRef !== null && playerRef?.current !== null) {
-      playerRef.current.muted = true;
+    const videoElement = playerRef.current;
+    let unmuteTimeout: ReturnType<typeof setTimeout> | undefined;
 
-      playerRef.current.addEventListener("loadedmetadata", () => {
-        // @ts-ignore
-        playerRef.current.play();
-      });
-
+    const startMutedPlayback = () => {
+      videoElement.muted = true;
       setMuted(true);
+
+      videoElement.play().catch(console.error);
+
+      if (typeof autoUnmuteDelay !== "number" || autoUnmuteDelay < 0) return;
+
+      unmuteTimeout = setTimeout(() => {
+        if (!playerRef.current) return;
+
+        playerRef.current.muted = false;
+        setMuted(false);
+      }, autoUnmuteDelay);
+    };
+
+    videoElement.muted = true;
+    setMuted(true);
+
+    if (videoElement.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      startMutedPlayback();
+    } else {
+      videoElement.addEventListener("loadedmetadata", startMutedPlayback, {
+        once: true,
+      });
     }
-  }, [autoPlay]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ngăn chặn các hành động mặc định của trình duyệt
-      const target = e.target as HTMLElement;
+    return () => {
+      videoElement.removeEventListener("loadedmetadata", startMutedPlayback);
+      if (unmuteTimeout) clearTimeout(unmuteTimeout);
+    };
+  }, [autoPlay, autoUnmuteDelay, source]);
 
-      const isInputField =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable;
-
-      if (isInputField) {
-        return;
-      }
-
-      if (
-        [
-          "Space",
-          "ArrowLeft",
-          "ArrowRight",
-          "ArrowUp",
-          "ArrowDown",
-          "f",
-          "m",
-        ].includes(e.code)
-      ) {
-        e.preventDefault();
-      }
-
-      switch (e.code) {
-        case "Space":
-          handlePlayPause();
-          break;
-        case "ArrowLeft":
-          // Tua lùi 5 giây
+  useHotkeys(
+    [
+      {
+        hotkey: "Space",
+        callback: handlePlayPause,
+      },
+      {
+        hotkey: "ArrowLeft",
+        callback: () => {
           if (playerRef.current) {
             playerRef.current.currentTime -= 5;
           }
-          break;
-        case "ArrowRight":
-          // Tua tới 5 giây
+        },
+      },
+      {
+        hotkey: "ArrowRight",
+        callback: () => {
           if (playerRef.current) {
             playerRef.current.currentTime += 5;
           }
-          break;
-        case "ArrowUp":
-          // Tăng âm lượng
-          handleVolumeChange(Math.min(volume + 5, 100));
-          break;
-        case "ArrowDown":
-          // Giảm âm lượng
-          handleVolumeChange(Math.max(volume - 5, 0));
-          break;
-        case "KeyF":
-          // Bật/tắt chế độ toàn màn hình
-          handleFullScreen();
-          break;
-        case "KeyM":
-          // Bật/tắt âm thanh
-          handleToggleMuted();
-          break;
-        default:
-          break;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [
-    play,
-    volume,
-    handlePlayPause,
-    handleVolumeChange,
-    handleFullScreen,
-    handleToggleMuted,
-  ]);
+        },
+      },
+      {
+        hotkey: "ArrowUp",
+        callback: () => handleVolumeChange(Math.min(volume + 5, 100)),
+      },
+      {
+        hotkey: "ArrowDown",
+        callback: () => handleVolumeChange(Math.max(volume - 5, 0)),
+      },
+      {
+        hotkey: "F",
+        callback: handleFullScreen,
+      },
+      {
+        hotkey: "M",
+        callback: handleToggleMuted,
+      },
+    ],
+    {
+      ignoreInputs: true,
+      preventDefault: true,
+      stopPropagation: false,
+    },
+  );
 
   useEffect(() => {
     if (!play) setShowControl(true);
@@ -571,7 +557,7 @@ const Player: React.FC<PlayerProps> = ({
       ref={videoContainerRef}
       onMouseMove={() => setShowControl(true)}
       onMouseLeave={() => {
-        if (seeking) return;
+        if (seeking || showSettings) return;
         setShowControl(false);
       }}
       onClick={() => setShowControl(true)}
@@ -600,6 +586,7 @@ const Player: React.FC<PlayerProps> = ({
       <div
         onClick={(e) => {
           e.stopPropagation();
+          if (e.target !== e.currentTarget) return;
           setShowSettings(false);
           setShowControl(false);
         }}
@@ -619,13 +606,45 @@ const Player: React.FC<PlayerProps> = ({
           </div>
         )}
 
+        {hasVideoMetadata && (
+          <div className="video-meta-overlay">
+            {videoTitle && <p className="video-meta-title">{videoTitle}</p>}
+            {videoDescription && (
+              <p className="video-meta-description">{videoDescription}</p>
+            )}
+          </div>
+        )}
+
+        {!live && activeSkipSegment && (
+          <button
+            type="button"
+            className="skip-segment-button opacity-animation"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSkipSegment();
+            }}
+          >
+            {activeSkipSegment.label}
+          </button>
+        )}
+
         {/* Menu select play speed, quanlity, subtitle */}
         {showSettings && (
           <div
-            onClick={(e) => setShowSettings(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (e.target !== e.currentTarget) return;
+              setShowSettings(false);
+              setSettingsType("main");
+            }}
             className="settings-container"
           >
-            <div className="w-full" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="w-full"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               {settingsType === "main" ? (
                 <MainSettings
                   currentQuality={sourceMulti?.[currentSource]?.label}
@@ -672,6 +691,7 @@ const Player: React.FC<PlayerProps> = ({
             onChange={handleChangeTime}
             min={0}
             max={playerRef?.current?.duration as number}
+            markers={skipMarkers}
             live={live}
             color={defaultColor}
             onPreview={(value, percentValue) => {
@@ -743,7 +763,15 @@ const Player: React.FC<PlayerProps> = ({
                     {formatVideoTime(playerRef?.current?.duration as number)}
                   </div>
                 ) : (
-                  <div className="text-sm font-semibold cursor-pointer live-button">
+                  <div
+                    onClick={handleGoLive}
+                    aria-disabled={!canSyncLive}
+                    className={`text-sm font-semibold live-button ${
+                      canSyncLive
+                        ? "cursor-pointer live-button-behind"
+                        : "live-button-synced"
+                    }`}
+                  >
                     Live
                   </div>
                 )}
@@ -771,7 +799,7 @@ const Player: React.FC<PlayerProps> = ({
                 className="cursor-pointer main-settings-content tooltip-container"
               >
                 {fullScreen ? (
-                  <IconFullscreenExit fontSize={30} />
+                  <IconFullscreenExit fontSize={23} />
                 ) : (
                   <IconFullscreen fontSize={23} />
                 )}
