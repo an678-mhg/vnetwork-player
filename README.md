@@ -10,9 +10,7 @@ A focused React video player for MP4 and HLS/M3U8 streams with custom controls, 
 
 ## Demo
 
-```text
-https://vnetwork-player.vercel.app/
-```
+[https://an678-mhg.github.io/vnetwork-player/](https://an678-mhg.github.io/vnetwork-player/)
 
 ## Installation
 
@@ -174,35 +172,32 @@ export function PlayerWithRef() {
   }, []);
 
   return (
-    <VPlayer
-      source="https://example.com/video.mp4"
-      playerRef={playerRef}
-    />
+    <VPlayer source="https://example.com/video.mp4" playerRef={playerRef} />
   );
 }
 ```
 
 ## Props
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `source` | `string \| Source[]` | Required. MP4 URL, M3U8 URL, or a manual quality list. |
-| `Hls` | `Hls constructor` | Required for HLS/M3U8 streams. Pass the `hls.js` constructor. |
-| `live` | `boolean` | Enables live mode, disables seeking, and shows live edge sync behavior. |
-| `poster` | `string` | Poster image passed to the video element. |
-| `color` | `string` | Accent color for progress and controls. |
-| `videoTitle` | `string` | Title rendered in the player overlay. |
-| `videoDescription` | `string` | Secondary metadata rendered under `videoTitle`. |
-| `subtitle` | `Subtitle[]` | WebVTT subtitle tracks. |
-| `autoPlay` | `boolean` | Native video autoplay prop. Player starts muted for browser compatibility. |
-| `autoUnmuteDelay` | `number` | Best-effort delayed unmute in milliseconds after muted autoplay. |
-| `startIntro` | `number` | Intro start second. Used with `endIntro`. |
-| `endIntro` | `number` | Intro end second and skip target. |
-| `startOutro` | `number` | Outro start second. Used with `endOutro`. |
-| `endOutro` | `number` | Outro end second and skip target. |
-| `playerRef` | `MutableRefObject<HTMLVideoElement \| null>` | Access to the underlying video element. |
-| `className` | `string` | Class attached to the video element. |
-| `...videoProps` | `HTMLVideoElement props` | Any native video prop supported by React. |
+| Prop               | Type                                         | Description                                                                |
+| ------------------ | -------------------------------------------- | -------------------------------------------------------------------------- |
+| `source`           | `string \| Source[]`                         | Required. MP4 URL, M3U8 URL, or a manual quality list.                     |
+| `Hls`              | `Hls constructor`                            | Required for HLS/M3U8 streams. Pass the `hls.js` constructor.              |
+| `live`             | `boolean`                                    | Enables live mode, disables seeking, and shows live edge sync behavior.    |
+| `poster`           | `string`                                     | Poster image passed to the video element.                                  |
+| `color`            | `string`                                     | Accent color for progress and controls.                                    |
+| `videoTitle`       | `string`                                     | Title rendered in the player overlay.                                      |
+| `videoDescription` | `string`                                     | Secondary metadata rendered under `videoTitle`.                            |
+| `subtitle`         | `Subtitle[]`                                 | WebVTT subtitle tracks.                                                    |
+| `autoPlay`         | `boolean`                                    | Native video autoplay prop. Player starts muted for browser compatibility. |
+| `autoUnmuteDelay`  | `number`                                     | Best-effort delayed unmute in milliseconds after muted autoplay.           |
+| `startIntro`       | `number`                                     | Intro start second. Used with `endIntro`.                                  |
+| `endIntro`         | `number`                                     | Intro end second and skip target.                                          |
+| `startOutro`       | `number`                                     | Outro start second. Used with `endOutro`.                                  |
+| `endOutro`         | `number`                                     | Outro end second and skip target.                                          |
+| `playerRef`        | `MutableRefObject<HTMLVideoElement \| null>` | Access to the underlying video element.                                    |
+| `className`        | `string`                                     | Class attached to the video element.                                       |
+| `...videoProps`    | `HTMLVideoElement props`                     | Any native video prop supported by React.                                  |
 
 ```ts
 interface Source {
