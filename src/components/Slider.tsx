@@ -132,6 +132,11 @@ const Slider: React.FC<SliderProps> = ({
                 width: `${width}%`,
                 backgroundColor: marker.color || color,
               }}
+              onMouseEnter={() => onPreview && onPreview(null, null)}
+              onMouseMove={(e) => {
+                e.stopPropagation();
+                onPreview && onPreview(null, null);
+              }}
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
             >

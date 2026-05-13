@@ -55,8 +55,10 @@ const Player: React.FC<PlayerProps> = ({
   autoUnmuteDelay,
   startIntro,
   endIntro,
+  introColor,
   startOutro,
   endOutro,
+  outroColor,
   Hls,
   ...props
 }) => {
@@ -99,6 +101,8 @@ const Player: React.FC<PlayerProps> = ({
   const [liveEdgeDelay, setLiveEdgeDelay] = useState(0);
 
   const defaultColor = color || "#ef4444";
+  const defaultIntroColor = introColor || "#f59e0b";
+  const defaultOutroColor = outroColor || "#8b5cf6";
   const playerRef = passedRef || myRef;
   const hasVideoMetadata = Boolean(videoTitle || videoDescription);
   const canSyncLive =
@@ -120,7 +124,10 @@ const Player: React.FC<PlayerProps> = ({
         .filter((segment): segment is NormalizedSkipSegment => Boolean(segment))
         .map((segment) => ({
           ...segment,
-          color: segment.label === "Skip intro" ? "#f59e0b" : "#8b5cf6",
+          color:
+            segment.label === "Skip intro"
+              ? defaultIntroColor
+              : defaultOutroColor,
         }))
     : [];
 

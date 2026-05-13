@@ -12,7 +12,9 @@ import {
   Braces,
   CheckCircle2,
   Copy,
+  ExternalLink,
   Moon,
+  Package,
   Settings2,
   Sun,
   TerminalSquare,
@@ -81,6 +83,7 @@ const propsRows = [
     "number",
     "Intro window end second and target time when Skip intro is clicked.",
   ],
+  ["introColor", "string", "Color for the intro marker on the progress bar."],
   [
     "startOutro",
     "number",
@@ -91,6 +94,7 @@ const propsRows = [
     "number",
     "Outro window end second and target time when Skip outro is clicked.",
   ],
+  ["outroColor", "string", "Color for the outro marker on the progress bar."],
   ["playerRef", "MutableRefObject", "Access to the underlying video element."],
   ["className", "string", "Class attached to the video element."],
   ["...videoProps", "HTMLVideoElement props", "Any native video prop."],
@@ -98,6 +102,37 @@ const propsRows = [
 
 const installSnippet = `npm i vnetwork-player hls.js
 import "vnetwork-player/dist/vnetwork-player.min.css";`;
+
+const packageBadges = [
+  {
+    href: "https://www.npmjs.com/package/vnetwork-player",
+    src: "https://img.shields.io/npm/dt/vnetwork-player.svg?style=flat&color=success",
+    alt: "Downloads",
+  },
+  {
+    href: "https://pkg-size.dev/vnetwork-player",
+    src: "https://img.shields.io/bundlejs/size/vnetwork-player",
+    alt: "Build size",
+  },
+  {
+    href: "https://www.npmjs.com/package/vnetwork-player",
+    src: "https://img.shields.io/npm/v/vnetwork-player?style=flat&color=success",
+    alt: "Version",
+  },
+  {
+    href: "https://pkg-size.dev/vnetwork-player",
+    src: "https://pkg-size.dev/badge/install/103906",
+    alt: "Install size",
+  },
+  {
+    href: "https://pkg-size.dev/vnetwork-player",
+    src: "https://pkg-size.dev/badge/bundle/24854",
+    alt: "Bundle size",
+  },
+];
+
+const npmStatsUrl =
+  "https://npm-stat.com/charts.html?package=vnetwork-player&from=2019-01-01&to=";
 
 const usageSnippet = `import Hls from "hls.js";
 import VPlayer from "vnetwork-player";
@@ -135,9 +170,11 @@ function App() {
   const [skipIntroEnabled, setSkipIntroEnabled] = useState(true);
   const [startIntro, setStartIntro] = useState(60);
   const [endIntro, setEndIntro] = useState(120);
+  const [introColor, setIntroColor] = useState("#f59e0b");
   const [skipOutroEnabled, setSkipOutroEnabled] = useState(true);
   const [startOutro, setStartOutro] = useState(500);
   const [endOutro, setEndOutro] = useState(552);
+  const [outroColor, setOutroColor] = useState("#8b5cf6");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -182,8 +219,10 @@ function App() {
       autoUnmuteDelay: autoPlay && autoUnmute ? autoUnmuteDelay : undefined,
       startIntro: skipIntroEnabled ? startIntro : undefined,
       endIntro: skipIntroEnabled ? endIntro : undefined,
+      introColor: skipIntroEnabled ? introColor : undefined,
       startOutro: skipOutroEnabled ? startOutro : undefined,
       endOutro: skipOutroEnabled ? endOutro : undefined,
+      outroColor: skipOutroEnabled ? outroColor : undefined,
       subtitle: subtitleEnabled
         ? [
             {
@@ -204,8 +243,10 @@ function App() {
       videoTitle,
       endIntro,
       endOutro,
+      introColor,
       skipIntroEnabled,
       skipOutroEnabled,
+      outroColor,
       source,
       startIntro,
       startOutro,
@@ -229,8 +270,10 @@ function App() {
   ${autoPlay && autoUnmute ? `autoUnmuteDelay={${autoUnmuteDelay}}` : ""}
   ${skipIntroEnabled ? `startIntro={${startIntro}}` : ""}
   ${skipIntroEnabled ? `endIntro={${endIntro}}` : ""}
+  ${skipIntroEnabled ? `introColor="${introColor}"` : ""}
   ${skipOutroEnabled ? `startOutro={${startOutro}}` : ""}
   ${skipOutroEnabled ? `endOutro={${endOutro}}` : ""}
+  ${skipOutroEnabled ? `outroColor="${outroColor}"` : ""}
   videoTitle={${videoTitleValue}}
   videoDescription={${videoDescriptionValue}}
   color="${accent}"
@@ -255,8 +298,10 @@ function App() {
     videoTitle,
     endIntro,
     endOutro,
+    introColor,
     skipIntroEnabled,
     skipOutroEnabled,
+    outroColor,
     source,
     sourceMode,
     startIntro,
@@ -269,8 +314,8 @@ function App() {
   };
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/82 backdrop-blur-xl">
+    <main className="min-h-screen overflow-x-hidden bg-background pt-[73px] text-foreground">
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-5">
           <a href="#overview" className="flex min-w-0 items-center gap-3">
             <PlayerLogo className="size-10 shrink-0 text-primary shadow-sm" />
@@ -353,6 +398,52 @@ function App() {
                 Custom controls, hotkeys, subtitles, quality switching, PiP,
                 fullscreen, and one-click live sync.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="package-section border-b border-border/70 px-4 py-5 sm:px-5">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              <Package className="size-4" />
+              npm package
+            </p>
+            <h2 className="mt-2 break-words font-display text-2xl font-bold">
+              vnetwork-player
+            </h2>
+            <a
+              className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground transition hover:text-primary"
+              href={npmStatsUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View total download chart
+              <ExternalLink className="size-3.5" />
+            </a>
+          </div>
+          <div className="package-badge-rail">
+            <a
+              className="npm-package-link"
+              href="https://www.npmjs.com/package/vnetwork-player"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open npm
+              <ExternalLink className="size-3.5" />
+            </a>
+            <div className="package-badges" aria-label="Package metrics">
+              {packageBadges.map((badge) => (
+                <a
+                  key={badge.alt}
+                  href={badge.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img src={badge.src} alt={badge.alt} />
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -625,6 +716,17 @@ function App() {
                             }
                           />
                         </Field>
+                        <Field label="introColor">
+                          <Input
+                            type="color"
+                            value={introColor}
+                            disabled={!skipIntroEnabled}
+                            onChange={(event) =>
+                              setIntroColor(event.target.value)
+                            }
+                            className="h-10 p-1"
+                          />
+                        </Field>
                       </div>
                     </div>
                     <div className="space-y-3">
@@ -656,6 +758,17 @@ function App() {
                             onChange={(event) =>
                               setEndOutro(Number(event.target.value))
                             }
+                          />
+                        </Field>
+                        <Field label="outroColor">
+                          <Input
+                            type="color"
+                            value={outroColor}
+                            disabled={!skipOutroEnabled}
+                            onChange={(event) =>
+                              setOutroColor(event.target.value)
+                            }
+                            className="h-10 p-1"
                           />
                         </Field>
                       </div>

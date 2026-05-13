@@ -121,6 +121,44 @@
     transform: rotate(18deg);
   }
 
+  .package-section {
+    background:
+      linear-gradient(90deg, hsl(var(--card)), hsl(var(--muted) / 0.34)),
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--border) / 0.42) 0,
+        hsl(var(--border) / 0.42) 1px,
+        transparent 1px,
+        transparent 36px
+      );
+  }
+
+  .package-badge-rail {
+    @apply flex w-full max-w-full flex-col gap-3 rounded-lg border border-border/80 p-3 shadow-sm backdrop-blur md:w-auto md:flex-row md:items-center;
+    background: hsl(var(--background) / 0.62);
+    box-shadow:
+      0 12px 36px hsl(220 40% 3% / 0.1),
+      inset 0 1px 0 hsl(0 0% 100% / 0.12);
+  }
+
+  .npm-package-link {
+    @apply inline-flex h-9 w-fit shrink-0 items-center gap-2 rounded-md bg-primary px-3 text-sm font-bold text-primary-foreground shadow-sm transition hover:brightness-110;
+  }
+
+  .package-badges {
+    @apply flex min-w-0 flex-wrap items-center gap-2;
+  }
+
+  .package-badges a {
+    @apply inline-flex min-w-0 rounded-[4px] transition hover:-translate-y-0.5 hover:shadow-md;
+  }
+
+  .package-badges img {
+    display: block;
+    max-width: 100%;
+    height: 24px;
+  }
+
   .signal-grid {
     @apply grid grid-cols-2 gap-4;
   }
@@ -168,7 +206,7 @@
   .player-shell .video {
     aspect-ratio: 16 / 9;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: inherit;
   }
 
@@ -221,6 +259,14 @@
 
     .signal-grid span {
       height: 4.5rem;
+    }
+
+    .package-badge-rail {
+      width: 100%;
+    }
+
+    .package-badges img {
+      height: 23px;
     }
   }
 }

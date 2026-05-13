@@ -8,6 +8,12 @@
 
 A focused React video player for MP4 and HLS/M3U8 streams with custom controls, keyboard shortcuts, subtitles, quality switching, PiP, fullscreen, live sync, skip intro/outro, and player metadata.
 
+## NPM Package
+
+[https://www.npmjs.com/package/vnetwork-player](https://www.npmjs.com/package/vnetwork-player)
+
+Download stats: [https://npm-stat.com/charts.html?package=vnetwork-player&from=2019-01-01&to=](https://npm-stat.com/charts.html?package=vnetwork-player&from=2019-01-01&to=)
+
 ## Demo
 
 [https://an678-mhg.github.io/vnetwork-player/](https://an678-mhg.github.io/vnetwork-player/)
@@ -127,12 +133,14 @@ export function LivePlayer() {
   source="https://example.com/episode.mp4"
   startIntro={0}
   endIntro={82}
+  introColor="#f59e0b"
   startOutro={1480}
   endOutro={1534}
+  outroColor="#8b5cf6"
 />
 ```
 
-The player also renders colored intro/outro markers directly on the progress bar. Hovering a marker shows its label.
+The player also renders colored intro/outro markers directly on the progress bar. Hovering a marker shows its label. Use `introColor` and `outroColor` to customize marker colors.
 
 ## Subtitles
 
@@ -193,8 +201,10 @@ export function PlayerWithRef() {
 | `autoUnmuteDelay`  | `number`                                     | Best-effort delayed unmute in milliseconds after muted autoplay.           |
 | `startIntro`       | `number`                                     | Intro start second. Used with `endIntro`.                                  |
 | `endIntro`         | `number`                                     | Intro end second and skip target.                                          |
+| `introColor`       | `string`                                     | Color for the intro marker on the progress bar.                            |
 | `startOutro`       | `number`                                     | Outro start second. Used with `endOutro`.                                  |
 | `endOutro`         | `number`                                     | Outro end second and skip target.                                          |
+| `outroColor`       | `string`                                     | Color for the outro marker on the progress bar.                            |
 | `playerRef`        | `MutableRefObject<HTMLVideoElement \| null>` | Access to the underlying video element.                                    |
 | `className`        | `string`                                     | Class attached to the video element.                                       |
 | `...videoProps`    | `HTMLVideoElement props`                     | Any native video prop supported by React.                                  |

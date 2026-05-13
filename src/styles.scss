@@ -12,6 +12,8 @@
   .video {
     width: 100%;
     height: 100%;
+    object-fit: contain;
+    background-color: #000;
   }
 
   .video-container {
@@ -20,6 +22,24 @@
     position: relative;
     color: #fff;
     background-color: #111;
+  }
+
+  .video-container:fullscreen,
+  .video-container:-webkit-full-screen,
+  .video-container:-moz-full-screen,
+  .video-container:-ms-fullscreen {
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+  }
+
+  .video-container:fullscreen .video,
+  .video-container:-webkit-full-screen .video,
+  .video-container:-moz-full-screen .video,
+  .video-container:-ms-fullscreen .video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .center-item-absolute {
@@ -33,10 +53,47 @@
   .control-container {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    background: transparent;
     align-items: flex-end;
     padding: 8px 0;
     transition: all linear 0.4s;
+  }
+
+  .control-container::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 34%;
+    min-height: 92px;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.42) 46%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .control-container::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 24%;
+    min-height: 70px;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.38) 0%,
+      rgba(0, 0, 0, 0.16) 48%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .control-container > .w-full {
+    position: relative;
+    z-index: 2;
   }
 
   .settings-container {
@@ -45,7 +102,12 @@
     align-items: flex-end;
     bottom: 0;
     right: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.62) 0%,
+      rgba(0, 0, 0, 0.28) 34%,
+      rgba(0, 0, 0, 0) 70%
+    );
     left: 0;
     top: 0;
     z-index: 100;
@@ -157,6 +219,10 @@
     z-index: 2;
   }
 
+  .progress-marker:hover {
+    z-index: 120;
+  }
+
   .progress-marker::before {
     content: "";
     position: absolute;
@@ -181,7 +247,7 @@
     transition:
       opacity 0.16s ease,
       transform 0.16s ease;
-    z-index: 30;
+    z-index: 121;
   }
 
   .progress-marker:hover .progress-marker-tooltip {
@@ -216,6 +282,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 8px;
+    position: relative;
+    z-index: 2;
   }
 
   .main-settings-content {

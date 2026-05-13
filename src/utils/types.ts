@@ -23,7 +23,9 @@ export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
   autoUnmuteDelay?: number;
   startIntro?: number;
   endIntro?: number;
+  introColor?: string;
   startOutro?: number;
   endOutro?: number;
+  outroColor?: string;
   Hls?: any;
 }
