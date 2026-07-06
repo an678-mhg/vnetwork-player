@@ -9,6 +9,12 @@ interface SliderProps {
   max?: number;
   className?: string;
   color?: string;
+  trackColor?: string;
+  buffered?: Array<{
+    start: number;
+    end: number;
+  }>;
+  bufferedColor?: string;
   live?: boolean;
   markers?: Array<{
     start: number;
@@ -26,6 +32,9 @@ const Slider: React.FC<SliderProps> = ({
   max = 100,
   className = "",
   color = "#ef4444",
+  trackColor,
+  buffered = [],
+  bufferedColor = "rgba(255, 255, 255, 0.75)",
   live = false,
   markers = [],
   onDragEnd,
@@ -99,6 +108,7 @@ const Slider: React.FC<SliderProps> = ({
   const canRenderTimeline = Number.isFinite(range) && range > 0;
   const percentValue = canRenderTimeline ? ((value - min) / range) * 100 : 0;
   const markerItems = !live && canRenderTimeline ? markers : [];
+  const bufferedItems = !live && canRenderTimeline ? buffered : [];
 
   return (
     <div
@@ -113,7 +123,31 @@ const Slider: React.FC<SliderProps> = ({
         onDragEnd && onDragEnd();
       }}
     >
-      <div className="progress-gray">
+      <div
+        className="progress-gray"
+        style={trackColor ? { backgroundColor: trackColor } : undefined}
+      >
+        {bufferedItems.map((rangeItem, index) => {
+          const start = Math.max(rangeItem.start, min);
+          const end = Math.min(rangeItem.end, max);
+
+          if (end <= start) return null;
+
+          const left = ((start - min) / range) * 100;
+          const width = ((end - start) / range) * 100;
+
+          return (
+            <div
+              key={`buffered-${index}`}
+              className="progress-buffered"
+              style={{
+                left: `${left}%`,
+                width: `${width}%`,
+                backgroundColor: bufferedColor,
+              }}
+            />
+          );
+        })}
         {markerItems.map((marker) => {
           const start = Math.max(marker.start, min);
           const end = Math.min(marker.end, max);

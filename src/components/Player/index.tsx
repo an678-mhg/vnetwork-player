@@ -4,8 +4,8 @@ import {
   MUTED_KEY,
   VOLUME_KEY,
   formatVideoTime,
+  getSourceType,
   playSpeedOptions,
-  removeSearchParams,
 } from "../../utils/contants";
 import {
   addFullscreenChangeListener,
@@ -14,7 +14,9 @@ import {
   togglePictureInPicture,
 } from "../../utils/fullscreen";
 import {
+  getBufferedAhead,
   getLivePosition,
+  HLS_AUTO_LEVEL,
   HlsConstructorLike,
   HlsInstance,
   isSkipSegmentActive,
@@ -22,6 +24,7 @@ import {
   NormalizedSkipSegment,
   normalizeSkipIntro,
   normalizeSkipOutro,
+  resolveAutoQualityConfig,
 } from "../../utils/player";
 import { PlayerProps, Source } from "../../utils/types";
 import MainSettings from "./Settings/MainSettings";
@@ -43,6 +46,8 @@ import Slider from "../Slider";
 
 const Player: React.FC<PlayerProps> = ({
   color,
+  trackColor,
+  bufferedColor,
   subtitle,
   playerRef: passedRef,
   className,
@@ -59,6 +64,7 @@ const Player: React.FC<PlayerProps> = ({
   startOutro,
   endOutro,
   outroColor,
+  autoQualityConfig,
   Hls,
   ...props
 }) => {
@@ -76,13 +82,20 @@ const Player: React.FC<PlayerProps> = ({
 
   const [currentSource, setCurrentSource] = useState(0);
   const [sourceMulti, setSourceMulti] = useState<Source[]>([]);
+  const [autoQuality, setAutoQuality] = useState(true);
+  const autoQualityRef = useRef(autoQuality);
+  autoQualityRef.current = autoQuality;
+  // True when the source is a single m3u8 master playlist: hls.js owns the
+  // adaptive switching. False for user-provided Source[] profiles where the
+  // custom stall/buffer monitor drives auto switching.
+  const isMasterHlsRef = useRef(false);
   const [currentPlaySpeed, setCurrePlaySpeed] = useState(3);
   const [showControl, setShowControl] = useState(true);
   const [play, setPlay] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [fullScreen, setFullScreen] = useState(false);
   const [muted, setMuted] = useState<boolean>(
-    JSON.parse(localStorage.getItem(MUTED_KEY)!) || false,
+    () => JSON.parse(localStorage.getItem(MUTED_KEY)!) || false,
   );
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -91,7 +104,7 @@ const Player: React.FC<PlayerProps> = ({
   >("main");
   const [currentSubtitle, setCurrentSubtitle] = useState<number | null>(0);
   const [volume, setVolume] = useState(
-    Number(localStorage.getItem(VOLUME_KEY)) || 100,
+    () => Number(localStorage.getItem(VOLUME_KEY)) || 100,
   );
   const [seeking, setSeeking] = useState(false);
   const [previewTime, setPreviewTime] = useState<{
@@ -99,6 +112,17 @@ const Player: React.FC<PlayerProps> = ({
     left: number | null;
   }>({ time: null, left: null });
   const [liveEdgeDelay, setLiveEdgeDelay] = useState(0);
+  const [bufferedRanges, setBufferedRanges] = useState<
+    Array<{ start: number; end: number }>
+  >([]);
+
+  // Stable identity for the source prop: effects keyed on this only re-run
+  // when the actual URL list changes (an inline array prop gets a new
+  // reference on every render and must not retrigger loads or listeners).
+  const sourceKey =
+    typeof source === "string"
+      ? source
+      : source?.map((item) => item?.url)?.join("|");
 
   const defaultColor = color || "#ef4444";
   const defaultIntroColor = introColor || "#f59e0b";
@@ -176,14 +200,21 @@ const Player: React.FC<PlayerProps> = ({
     setSettingsType("main");
   };
 
-  const handleChangeSource = (index: number) => {
+  const applySourceChange = (index: number) => {
     if (!playerRef?.current) return;
-    if (currentSource === index) return;
 
     setCurrentSource(index);
 
+    if (hlsRef?.current && isMasterHlsRef.current) {
+      // Master playlist: switch level in place, playback continues seamlessly.
+      hlsRef.current.currentLevel = index;
+      return;
+    }
+
     const existTrack = playerRef?.current?.querySelector("track");
     if (existTrack) existTrack.remove();
+
+    const tmpCurrentTime = playerRef.current.currentTime || currentTime;
 
     if (hlsRef?.current) {
       const hls = hlsRef?.current;
@@ -194,12 +225,30 @@ const Player: React.FC<PlayerProps> = ({
       playerRef?.current?.setAttribute("src", sourceMulti?.[index]?.url);
     }
 
-    const tmpCurrentTime = currentTime;
     setCurrentTime(tmpCurrentTime);
 
     if (playerRef !== null && playerRef?.current !== null) {
       playerRef.current.currentTime = tmpCurrentTime;
       playerRef.current.play();
+    }
+  };
+
+  const handleChangeSource = (index: number) => {
+    if (!playerRef?.current) return;
+    if (currentSource === index && !autoQuality) return;
+
+    setAutoQuality(false);
+    applySourceChange(index);
+
+    setShowSettings(false);
+    setSettingsType("main");
+  };
+
+  const handleSelectAutoQuality = () => {
+    setAutoQuality(true);
+
+    if (hlsRef?.current && isMasterHlsRef.current) {
+      hlsRef.current.currentLevel = HLS_AUTO_LEVEL;
     }
 
     setShowSettings(false);
@@ -208,6 +257,8 @@ const Player: React.FC<PlayerProps> = ({
 
   const handleLoadVideoMp4 = () => {
     if (hlsRef?.current) hlsRef?.current?.destroy();
+
+    isMasterHlsRef.current = false;
 
     setSourceMulti(
       typeof source === "string" ? [{ label: "Default", url: source }] : source,
@@ -245,16 +296,15 @@ const Player: React.FC<PlayerProps> = ({
 
     hls.on(HlsConstructor.Events.MANIFEST_PARSED, function (_, data) {
       if (typeof source !== "string") {
+        isMasterHlsRef.current = false;
         return setSourceMulti(source);
       }
 
-      if (
-        data?.levels?.length !== sourceMulti?.length &&
-        sourceMulti?.length !== 0
-      )
-        return;
+      console.log(data?.levels || []);
 
       const levels = data?.levels || [];
+
+      isMasterHlsRef.current = levels.length > 1;
 
       setSourceMulti(
         levels?.map((item) => ({
@@ -262,8 +312,24 @@ const Player: React.FC<PlayerProps> = ({
           url: Array.isArray(item?.url) ? item?.url?.[0] : item?.url || "",
         })),
       );
-      setCurrentSource(levels?.length - 1);
-      hls.startLevel = levels?.length - 1;
+
+      if (isMasterHlsRef.current && autoQualityRef.current) {
+        // Let hls.js ABR pick the level based on measured bandwidth. Clamp
+        // the displayed level until the first LEVEL_SWITCHED arrives.
+        setCurrentSource((prev) =>
+          Math.max(0, Math.min(prev, levels.length - 1)),
+        );
+        hls.currentLevel = HLS_AUTO_LEVEL;
+      } else {
+        setCurrentSource(levels?.length - 1);
+        hls.startLevel = levels?.length - 1;
+      }
+    });
+
+    hls.on(HlsConstructor.Events.LEVEL_SWITCHED, function (_, data) {
+      if (!isMasterHlsRef.current) return;
+      if (typeof data?.level !== "number") return;
+      setCurrentSource(data.level);
     });
 
     hls.attachMedia(playerRef?.current);
@@ -386,7 +452,132 @@ const Player: React.FC<PlayerProps> = ({
       videoElement.removeEventListener("loadedmetadata", handleLiveProgress);
       window.clearInterval(interval);
     };
-  }, [live, source, currentSource]);
+  }, [live, sourceKey, currentSource]);
+
+  // Track how far the video has been downloaded so the seek bar can render
+  // the buffered ranges behind the playback progress.
+  useEffect(() => {
+    if (!playerRef.current) return;
+
+    const videoElement = playerRef.current;
+    let lastSignature = "";
+
+    const updateBuffered = () => {
+      const { buffered } = videoElement;
+      const ranges: Array<{ start: number; end: number }> = [];
+      let signature = "";
+
+      for (let i = 0; i < buffered.length; i++) {
+        const start = buffered.start(i);
+        const end = buffered.end(i);
+        ranges.push({ start, end });
+        signature += `${start.toFixed(1)}:${end.toFixed(1)};`;
+      }
+
+      // Skip the state update (and the re-render it causes) when the
+      // buffered ranges have not visibly moved since the last event.
+      if (signature === lastSignature) return;
+      lastSignature = signature;
+
+      setBufferedRanges(ranges);
+    };
+
+    const resetBuffered = () => {
+      lastSignature = "";
+      setBufferedRanges([]);
+    };
+
+    videoElement.addEventListener("progress", updateBuffered);
+    videoElement.addEventListener("timeupdate", updateBuffered);
+    videoElement.addEventListener("loadedmetadata", updateBuffered);
+    videoElement.addEventListener("emptied", resetBuffered);
+
+    return () => {
+      videoElement.removeEventListener("progress", updateBuffered);
+      videoElement.removeEventListener("timeupdate", updateBuffered);
+      videoElement.removeEventListener("loadedmetadata", updateBuffered);
+      videoElement.removeEventListener("emptied", resetBuffered);
+    };
+  }, [sourceKey, currentSource]);
+
+  // Custom auto-quality monitor. Only used when hls.js ABR is not in charge
+  // (user-provided Source[] profiles or progressive mp4): steps down one
+  // profile when playback stalls repeatedly or for too long, steps back up
+  // when the buffer stays healthy.
+  useEffect(() => {
+    if (!autoQuality) return;
+    if (isMasterHlsRef.current) return;
+    if (sourceMulti?.length <= 1) return;
+    if (!playerRef.current) return;
+
+    const cfg = resolveAutoQualityConfig(autoQualityConfig);
+    const videoElement = playerRef.current;
+    let stallTimes: number[] = [];
+    let lastSwitchAt = 0;
+    let lastStallAt = Date.now();
+    let longStallTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    const stepTo = (index: number) => {
+      lastSwitchAt = Date.now();
+      stallTimes = [];
+      applySourceChange(index);
+    };
+
+    const handleStall = () => {
+      if (videoElement.seeking) return;
+
+      const now = Date.now();
+      if (lastSwitchAt && now - lastSwitchAt < cfg.switchGraceMs) return;
+
+      lastStallAt = now;
+      stallTimes = [
+        ...stallTimes.filter((t) => now - t < cfg.stallWindowMs),
+        now,
+      ];
+
+      if (currentSource <= 0) return;
+
+      if (stallTimes.length >= cfg.stallLimit) {
+        stepTo(currentSource - 1);
+        return;
+      }
+
+      // A single stall that never recovers also means the profile is too
+      // heavy for the current connection.
+      if (longStallTimeout) clearTimeout(longStallTimeout);
+      longStallTimeout = setTimeout(() => {
+        if (videoElement.seeking || videoElement.paused) return;
+        if (videoElement.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA)
+          return;
+        stepTo(currentSource - 1);
+      }, cfg.longStallMs);
+    };
+
+    const upgradeInterval = window.setInterval(() => {
+      const now = Date.now();
+
+      if (currentSource >= sourceMulti.length - 1) return;
+      if (videoElement.paused || videoElement.seeking) return;
+      if (lastSwitchAt && now - lastSwitchAt < cfg.switchCooldownMs) return;
+      if (now - lastStallAt < cfg.upgradeHealthyMs) return;
+      if (getBufferedAhead(videoElement) < cfg.upgradeBufferSeconds) return;
+
+      stepTo(currentSource + 1);
+    }, cfg.checkIntervalMs);
+
+    videoElement.addEventListener("waiting", handleStall);
+
+    return () => {
+      videoElement.removeEventListener("waiting", handleStall);
+      window.clearInterval(upgradeInterval);
+      if (longStallTimeout) clearTimeout(longStallTimeout);
+    };
+  }, [
+    autoQuality,
+    sourceMulti,
+    currentSource,
+    autoQualityConfig && JSON.stringify(autoQualityConfig),
+  ]);
 
   useEffect(() => {
     let timeout: any;
@@ -434,16 +625,11 @@ const Player: React.FC<PlayerProps> = ({
   }, [currentSubtitle, currentSource]);
 
   useEffect(() => {
-    const type =
-      typeof source === "string"
-        ? removeSearchParams(source)?.split(".")[source?.split(".")?.length - 1]
-        : removeSearchParams(source?.[0]?.url)?.split(".")[
-            source?.[0]?.url?.split(".")?.length - 1
-          ];
+    const type = getSourceType(
+      typeof source === "string" ? source : source?.[0]?.url,
+    );
 
-    if (type === "mp4") {
-      handleLoadVideoMp4();
-    } else if (type === "m3u8") {
+    if (type === "m3u8") {
       handleLoadVideoM3u8();
     } else {
       handleLoadVideoMp4();
@@ -452,9 +638,10 @@ const Player: React.FC<PlayerProps> = ({
     return () => {
       if (hlsRef?.current) {
         hlsRef?.current?.destroy();
+        hlsRef.current = null;
       }
     };
-  }, [source, sourceMulti?.length, hlsRef?.current]);
+  }, [sourceKey]);
 
   useEffect(() => {
     if (playerRef !== null && playerRef?.current !== null) {
@@ -500,7 +687,7 @@ const Player: React.FC<PlayerProps> = ({
       videoElement.removeEventListener("loadedmetadata", startMutedPlayback);
       if (unmuteTimeout) clearTimeout(unmuteTimeout);
     };
-  }, [autoPlay, autoUnmuteDelay, source]);
+  }, [autoPlay, autoUnmuteDelay, sourceKey]);
 
   useHotkeys(
     [
@@ -654,7 +841,11 @@ const Player: React.FC<PlayerProps> = ({
             >
               {settingsType === "main" ? (
                 <MainSettings
-                  currentQuality={sourceMulti?.[currentSource]?.label}
+                  currentQuality={
+                    autoQuality && sourceMulti?.length > 1
+                      ? `Auto (${sourceMulti?.[currentSource]?.label})`
+                      : sourceMulti?.[currentSource]?.label
+                  }
                   currentSpeed={playSpeedOptions?.[currentPlaySpeed]?.label}
                   setSettingsType={setSettingsType}
                   currentSubtitle={
@@ -677,6 +868,8 @@ const Player: React.FC<PlayerProps> = ({
                   currentSource={currentSource}
                   setSettingsType={setSettingsType}
                   source={sourceMulti}
+                  autoQuality={autoQuality}
+                  handleSelectAutoQuality={handleSelectAutoQuality}
                 />
               ) : (
                 <SubtitleSettings
@@ -701,6 +894,9 @@ const Player: React.FC<PlayerProps> = ({
             markers={skipMarkers}
             live={live}
             color={defaultColor}
+            trackColor={trackColor}
+            buffered={bufferedRanges}
+            bufferedColor={bufferedColor}
             onPreview={(value, percentValue) => {
               setPreviewTime({ time: value, left: percentValue });
             }}

@@ -1,4 +1,5 @@
 import { HTMLProps } from "react";
+import { AutoQualityConfig } from "./player";
 
 export interface Subtitle {
   url: string;
@@ -15,6 +16,8 @@ export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
   className?: string;
   poster?: string;
   color?: string;
+  trackColor?: string;
+  bufferedColor?: string;
   videoTitle?: string;
   videoDescription?: string;
   subtitle?: Subtitle[] | undefined;
@@ -27,5 +30,11 @@ export interface PlayerProps extends HTMLProps<HTMLVideoElement> {
   startOutro?: number;
   endOutro?: number;
   outroColor?: string;
+  /**
+   * Tuning for the custom auto-quality monitor used with `Source[]`
+   * profiles. Missing fields fall back to DEFAULT_AUTO_QUALITY_CONFIG.
+   * Ignored for single master m3u8 URLs (hls.js ABR handles those).
+   */
+  autoQualityConfig?: Partial<AutoQualityConfig>;
   Hls?: any;
 }

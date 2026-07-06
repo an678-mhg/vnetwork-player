@@ -188,6 +188,10 @@
     width: 100%;
     position: relative;
     cursor: pointer;
+    /* Own stacking context: keeps the bar's internal layers (buffered,
+       markers, played) from painting over sibling overlays like the
+       control-row tooltips. */
+    z-index: 1;
   }
 
   .progress-dot {
@@ -197,6 +201,8 @@
     top: 50%;
     transform: translateY(-50%);
     border-radius: 50%;
+    /* Above buffered (1), markers (2), and played (3) layers. */
+    z-index: 4;
   }
 
   .progress-gray {
@@ -207,6 +213,16 @@
     position: relative;
     transition: height 0.2s ease-in-out;
     overflow: visible;
+  }
+
+  .progress-buffered {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    transition: width 0.2s linear;
   }
 
   .progress-marker {

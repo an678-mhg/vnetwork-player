@@ -9,6 +9,8 @@ interface QualitySettingsProps {
   source: Source[];
   currentSource: number;
   handleChangeSource: (index: number) => void;
+  autoQuality: boolean;
+  handleSelectAutoQuality: () => void;
 }
 
 const QualitySettings: React.FC<QualitySettingsProps> = ({
@@ -16,7 +18,11 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
   source,
   currentSource,
   handleChangeSource,
+  autoQuality,
+  handleSelectAutoQuality,
 }) => {
+  const showAutoOption = source?.length > 1;
+
   return (
     <div
       className="overflow-y-auto opacity-animation settings-content scale-in-bl w-full"
@@ -33,6 +39,21 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
         <p className="text-sm font-semibold">Quality</p>
       </div>
       <div>
+        {showAutoOption && (
+          <div
+            onClick={handleSelectAutoQuality}
+            className="p-2 text-sm font-semibold main-settings-content cursor-pointer"
+          >
+            <div className="icon-20px mr-3">
+              {autoQuality && <IconCheckLg fontSize={20} />}
+            </div>
+            <p>
+              {autoQuality
+                ? `Auto (${source?.[currentSource]?.label})`
+                : "Auto"}
+            </p>
+          </div>
+        )}
         {source?.map((item, index) => (
           <div
             onClick={() => handleChangeSource(index)}
@@ -40,7 +61,9 @@ const QualitySettings: React.FC<QualitySettingsProps> = ({
             key={item?.url}
           >
             <div className="icon-20px mr-3">
-              {currentSource === index && <IconCheckLg fontSize={20} />}
+              {!autoQuality && currentSource === index && (
+                <IconCheckLg fontSize={20} />
+              )}
             </div>
             <p>{item?.label}</p>
           </div>

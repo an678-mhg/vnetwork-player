@@ -3,6 +3,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Player from "./components/Player";
 import ClientRender from "./components/ClientRender";
 import { PlayerProps } from "./utils/types";
+import { AutoQualityConfig, DEFAULT_AUTO_QUALITY_CONFIG } from "./utils/player";
 
 const VPlayer: React.FC<PlayerProps> = (props) => {
   return (
@@ -16,6 +17,6 @@ const VPlayer: React.FC<PlayerProps> = (props) => {
   );
 };
 
-export { PlayerProps };
+export { PlayerProps, AutoQualityConfig, DEFAULT_AUTO_QUALITY_CONFIG };
 
 export default VPlayer;

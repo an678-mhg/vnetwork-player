@@ -114,13 +114,57 @@ export function LivePlayer() {
 
 - MP4 and HLS/M3U8 playback.
 - Manual quality menu from `Source[]` or HLS manifest levels.
+- Auto quality mode: when more than one profile is available, an `Auto` option adapts the profile to network health (hls.js ABR for master playlists, stall/buffer heuristics for custom profiles) and shows the active resolution, e.g. `Auto (360p)`.
 - Keyboard shortcuts: Space, arrows, `F`, `M`.
 - Picture-in-picture and fullscreen with browser fallback support.
 - WebVTT subtitles.
 - Live mode with one-click live edge sync.
 - Muted autoplay with optional best-effort delayed unmute.
 - Skip intro/outro buttons and timeline markers.
+- Buffered-progress indicator on the seek bar with customizable track, buffered, played, and intro/outro marker colors.
 - Optional video title and description overlay.
+
+## Auto Quality
+
+When more than one quality profile is available — either auto-detected from an HLS master playlist or passed manually as `Source[]` — the quality menu shows an **Auto** option (enabled by default). While Auto is active, the menu displays the resolution currently playing, e.g. `Auto (360p)`.
+
+Two engines drive the adaptive switching:
+
+- **Master m3u8 URL (string source):** hls.js native ABR picks the level from measured bandwidth. Manual selections switch levels in place without interrupting playback.
+- **`Source[]` profiles (mp4 or per-profile m3u8 URLs):** a built-in monitor watches playback health. It steps **down** one profile when playback stalls (`stallLimit` stalls within `stallWindowMs`, or a single stall lasting `longStallMs`), and steps **up** one profile once the network stays healthy (`upgradeHealthyMs` without stalls and at least `upgradeBufferSeconds` buffered ahead).
+
+### Tuning with `autoQualityConfig`
+
+The monitor's thresholds can be customized through the `autoQualityConfig` prop. All fields are optional; missing fields fall back to the defaults below (also exported as `DEFAULT_AUTO_QUALITY_CONFIG`). The prop only affects the `Source[]` monitor — hls.js ABR ignores it.
+
+```tsx
+import VPlayer, { type AutoQualityConfig } from "vnetwork-player";
+
+<VPlayer
+  source={[
+    { label: "360p", url: "https://example.com/video-360.mp4" },
+    { label: "720p", url: "https://example.com/video-720.mp4" },
+    { label: "1080p", url: "https://example.com/video-1080.mp4" },
+  ]}
+  autoQualityConfig={{
+    stallLimit: 2, // be more tolerant: need 2 stalls before downgrading
+    upgradeHealthyMs: 15000, // be more careful: wait 15s before upgrading
+  }}
+/>;
+```
+
+| Field                   | Default | Description                                                                  |
+| ----------------------- | ------- | ---------------------------------------------------------------------------- |
+| `stallWindowMs`         | `10000` | Sliding window (ms) in which stalls are counted.                             |
+| `stallLimit`            | `1`     | Stall count inside the window that triggers a downgrade.                     |
+| `longStallMs`           | `1500`  | A single stall lasting longer than this (ms) triggers a downgrade.           |
+| `switchCooldownMs`      | `5000`  | Minimum time (ms) between two automatic switches.                            |
+| `switchGraceMs`         | `2000`  | Stalls within this time (ms) after a switch are ignored (loading noise).     |
+| `upgradeBufferSeconds`  | `8`     | Buffered seconds ahead of playback required before an upgrade.               |
+| `upgradeHealthyMs`      | `8000`  | Time (ms) without any stall required before an upgrade.                      |
+| `checkIntervalMs`       | `1000`  | How often (ms) the monitor evaluates an upgrade opportunity.                 |
+
+The defaults are tuned to react quickly — a single stall or a 1.5s freeze immediately drops one profile, and a healthy connection recovers one step every ~8s, similar to how YouTube behaves.
 
 ## Skip Intro / Outro
 
@@ -189,11 +233,14 @@ export function PlayerWithRef() {
 
 | Prop               | Type                                         | Description                                                                |
 | ------------------ | -------------------------------------------- | -------------------------------------------------------------------------- |
-| `source`           | `string \| Source[]`                         | Required. MP4 URL, M3U8 URL, or a manual quality list.                     |
+| `source`           | `string \| Source[]`                         | Required. MP4 URL, M3U8 URL, or a manual quality list. More than one profile enables Auto quality. |
 | `Hls`              | `Hls constructor`                            | Required for HLS/M3U8 streams. Pass the `hls.js` constructor.              |
 | `live`             | `boolean`                                    | Enables live mode, disables seeking, and shows live edge sync behavior.    |
 | `poster`           | `string`                                     | Poster image passed to the video element.                                  |
 | `color`            | `string`                                     | Accent color for progress and controls.                                    |
+| `trackColor`       | `string`                                     | Background color of the seek bar track (the full-length bar).              |
+| `bufferedColor`    | `string`                                     | Color of the downloaded (buffered) ranges shown on the seek bar.           |
+| `autoQualityConfig` | `Partial<AutoQualityConfig>`                | Tuning for the auto-quality monitor used with `Source[]` profiles. See Auto Quality. |
 | `videoTitle`       | `string`                                     | Title rendered in the player overlay.                                      |
 | `videoDescription` | `string`                                     | Secondary metadata rendered under `videoTitle`.                            |
 | `subtitle`         | `Subtitle[]`                                 | WebVTT subtitle tracks.                                                    |

@@ -53,3 +53,20 @@ export const playSpeedOptions = [
 export const removeSearchParams = (url: string) => {
   return url.split("?")?.[0];
 };
+
+/**
+ * Extracts the lowercase file extension from a media URL ("mp4", "m3u8", ...).
+ * Safe against query strings containing dots (signed tokens/JWT), dots in
+ * directory names, uppercase extensions, and missing extensions.
+ */
+export const getSourceType = (url?: string) => {
+  if (!url) return "";
+
+  const cleanUrl = removeSearchParams(url);
+  const fileName = cleanUrl.split("/").pop() || cleanUrl;
+  const dotIndex = fileName.lastIndexOf(".");
+
+  if (dotIndex === -1) return "";
+
+  return fileName.slice(dotIndex + 1).toLowerCase();
+};

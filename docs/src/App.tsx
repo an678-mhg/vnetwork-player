@@ -40,7 +40,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,11 +54,25 @@ const SAMPLE_POSTER =
   "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop";
 
 const propsRows = [
-  ["source", "string | Source[]", "Required. MP4, M3U8, or quality list."],
+  [
+    "source",
+    "string | Source[]",
+    "Required. MP4, M3U8, or quality list. More than one profile enables the Auto quality mode.",
+  ],
   ["Hls", "Hls constructor", "Required when source is an HLS / M3U8 URL."],
   ["live", "boolean", "Disables seek UI and enables click-to-live behavior."],
   ["poster", "string", "Poster image passed to the video element."],
   ["color", "string", "Accent color for progress and control states."],
+  [
+    "trackColor",
+    "string",
+    "Background color of the seek bar track (the full-length bar).",
+  ],
+  [
+    "bufferedColor",
+    "string",
+    "Color of the downloaded (buffered) ranges rendered on the seek bar.",
+  ],
   ["videoTitle", "string", "Title rendered in the player overlay."],
   [
     "videoDescription",
@@ -95,6 +108,11 @@ const propsRows = [
     "Outro window end second and target time when Skip outro is clicked.",
   ],
   ["outroColor", "string", "Color for the outro marker on the progress bar."],
+  [
+    "autoQualityConfig",
+    "Partial<AutoQualityConfig>",
+    "Tuning for the auto-quality monitor used with Source[] profiles. See the Auto Quality section.",
+  ],
   ["playerRef", "MutableRefObject", "Access to the underlying video element."],
   ["className", "string", "Class attached to the video element."],
   ["...videoProps", "HTMLVideoElement props", "Any native video prop."],
@@ -131,6 +149,63 @@ const packageBadges = [
   },
 ];
 
+const autoQualityRows = [
+  [
+    "stallWindowMs",
+    "10000",
+    "Sliding window (ms) in which playback stalls are counted.",
+  ],
+  [
+    "stallLimit",
+    "1",
+    "Stall count inside the window that triggers a downgrade.",
+  ],
+  [
+    "longStallMs",
+    "1500",
+    "A single stall lasting longer than this (ms) triggers a downgrade.",
+  ],
+  [
+    "switchCooldownMs",
+    "5000",
+    "Minimum time (ms) between two automatic quality switches.",
+  ],
+  [
+    "switchGraceMs",
+    "2000",
+    "Stalls within this time (ms) after a switch are ignored as loading noise.",
+  ],
+  [
+    "upgradeBufferSeconds",
+    "8",
+    "Buffered seconds ahead of playback required before an upgrade.",
+  ],
+  [
+    "upgradeHealthyMs",
+    "8000",
+    "Time (ms) without any stall required before an upgrade.",
+  ],
+  [
+    "checkIntervalMs",
+    "1000",
+    "How often (ms) the monitor evaluates an upgrade opportunity.",
+  ],
+];
+
+const autoQualitySnippet = `import VPlayer, { type AutoQualityConfig } from "vnetwork-player";
+
+<VPlayer
+  source={[
+    { label: "360p", url: "https://example.com/video-360.mp4" },
+    { label: "720p", url: "https://example.com/video-720.mp4" },
+    { label: "1080p", url: "https://example.com/video-1080.mp4" },
+  ]}
+  autoQualityConfig={{
+    stallLimit: 2,          // need 2 stalls before downgrading
+    upgradeHealthyMs: 15000 // wait 15s of healthy playback before upgrading
+  }}
+/>`;
+
 const npmStatsUrl =
   "https://npm-stat.com/charts.html?package=vnetwork-player&from=2019-01-01&to=";
 
@@ -158,9 +233,11 @@ function App() {
   const [sourceUrl, setSourceUrl] = useState(SAMPLE_HLS);
   const [poster, setPoster] = useState(SAMPLE_POSTER);
   const [accent, setAccent] = useState("#ff0000");
+  const [trackColor, setTrackColor] = useState("#9ca3af");
+  const [bufferedColor, setBufferedColor] = useState("#e5e7eb");
   const [videoTitle, setVideoTitle] = useState("VNetwork Player demo stream");
   const [videoDescription, setVideoDescription] = useState(
-    "Interactive playback with custom controls, metadata, skip markers, and live sync.",
+    "Interactive playback with custom controls, metadata, skip markers, and live sync."
   );
   const [autoPlay, setAutoPlay] = useState(false);
   const [autoUnmute, setAutoUnmute] = useState(false);
@@ -213,6 +290,8 @@ function App() {
       live,
       poster,
       color: accent,
+      trackColor,
+      bufferedColor,
       videoTitle,
       videoDescription,
       autoPlay,
@@ -234,6 +313,8 @@ function App() {
     }),
     [
       accent,
+      trackColor,
+      bufferedColor,
       autoPlay,
       autoUnmute,
       autoUnmuteDelay,
@@ -251,7 +332,7 @@ function App() {
       startIntro,
       startOutro,
       subtitleEnabled,
-    ],
+    ]
   );
 
   const snippet = useMemo(() => {
@@ -277,6 +358,8 @@ function App() {
   videoTitle={${videoTitleValue}}
   videoDescription={${videoDescriptionValue}}
   color="${accent}"
+  trackColor="${trackColor}"
+  bufferedColor="${bufferedColor}"
   poster="${poster}"
   ${
     subtitleEnabled
@@ -289,6 +372,8 @@ function App() {
       .join("\n");
   }, [
     accent,
+    trackColor,
+    bufferedColor,
     autoPlay,
     autoUnmute,
     autoUnmuteDelay,
@@ -330,9 +415,15 @@ function App() {
           </a>
 
           <nav className="hidden items-center gap-1 md:flex">
-            {["Install", "Usage", "Props", "Playground"].map((item) => (
-              <Button key={item} asChild variant="ghost" size="sm">
-                <a href={`#${item.toLowerCase()}`}>{item}</a>
+            {[
+              ["Install", "install"],
+              ["Usage", "usage"],
+              ["Auto Quality", "auto-quality"],
+              ["Props", "props"],
+              ["Playground", "playground"],
+            ].map(([item, anchor]) => (
+              <Button key={anchor} asChild variant="ghost" size="sm">
+                <a href={`#${anchor}`}>{item}</a>
               </Button>
             ))}
           </nav>
@@ -484,7 +575,10 @@ function App() {
                 {[
                   ["Keyboard", "Space, arrows, F, M shortcuts are handled."],
                   ["Live edge", "Click Live to jump back to server time."],
-                  ["Quality", "Use Source[] for manual MP4 quality menus."],
+                  [
+                    "Auto quality",
+                    "Multiple profiles unlock an Auto mode that adapts to network health.",
+                  ],
                 ].map(([title, body]) => (
                   <div
                     key={title}
@@ -496,6 +590,49 @@ function App() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card id="auto-quality" className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="size-5 text-primary" />
+                Auto Quality
+              </CardTitle>
+              <CardDescription>
+                With more than one profile the quality menu gets an Auto mode
+                (default on) that shows the active resolution, e.g. Auto (360p).
+                Master m3u8 sources use hls.js ABR; Source[] profiles use a
+                built-in stall/buffer monitor tuned via `autoQualityConfig`.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CodeBlock code={autoQualitySnippet} />
+              <div className="mt-5 max-w-full overflow-x-auto rounded-md border border-border">
+                {autoQualityRows.map(([name, defaultValue, description]) => (
+                  <div
+                    key={name}
+                    className="grid min-w-[620px] gap-3 border-b border-border p-4 last:border-b-0 md:min-w-0 md:grid-cols-[200px_90px_1fr]"
+                  >
+                    <code className="font-mono text-sm text-primary">
+                      {name}
+                    </code>
+                    <code className="font-mono text-xs text-muted-foreground">
+                      {defaultValue}
+                    </code>
+                    <p className="text-sm text-muted-foreground">
+                      {description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Defaults react fast: one stall or a 1.5s freeze drops one
+                profile immediately, and a healthy connection recovers one step
+                after ~8s — similar to YouTube. All fields are optional; omitted
+                fields fall back to DEFAULT_AUTO_QUALITY_CONFIG (exported by the
+                package).
+              </p>
             </CardContent>
           </Card>
 
@@ -620,6 +757,27 @@ function App() {
                       <Input
                         value={poster}
                         onChange={(event) => setPoster(event.target.value)}
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="trackColor (seek bar track)">
+                      <Input
+                        type="color"
+                        value={trackColor}
+                        onChange={(event) => setTrackColor(event.target.value)}
+                        className="h-10 p-1"
+                      />
+                    </Field>
+                    <Field label="bufferedColor (downloaded ranges)">
+                      <Input
+                        type="color"
+                        value={bufferedColor}
+                        onChange={(event) =>
+                          setBufferedColor(event.target.value)
+                        }
+                        className="h-10 p-1"
                       />
                     </Field>
                   </div>
